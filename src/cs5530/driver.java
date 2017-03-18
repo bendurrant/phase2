@@ -24,6 +24,7 @@ public class driver {
 				//remember to replace the password
 				 	 con= new Connector();
 				 	 System.out.println ("Database connection established");
+				 	 con.stmt.close();
 				 	 
 			 }
 	         catch (Exception e)
