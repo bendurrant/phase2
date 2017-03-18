@@ -92,6 +92,8 @@ public class driver {
 				catch (Exception e) { /* ignore close errors */ }
 			}	 
 		}
+		
+
 	}
 	
 	public static boolean registerUser(Statement stmt) throws IOException
