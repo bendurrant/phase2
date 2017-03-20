@@ -283,7 +283,7 @@ public class driver {
 	public static void displayOptions()
 	{
 		System.out.println("     Options     ");
-		System.out.println("99. logout");
+		System.out.println("0. logout");
 		System.out.println("1. Create a new listing");
 	}
 
