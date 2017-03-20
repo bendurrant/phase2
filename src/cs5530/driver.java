@@ -14,10 +14,10 @@ public class driver {
 	 */
 	public static void displayMenu()
 	{
-		System.out.println("		Welcome to the UTrack System     ");
+		System.out.println("		Welcome to the Uotel System     ");
 		System.out.println("1. Sign in with existing account");
 		System.out.println("2. Register a new Account");
-		System.out.println("3. exit:");
+		System.out.println("3. Exit:");
 		System.out.println("Please enter your choice:");
 	}
 
@@ -41,6 +41,12 @@ public class driver {
 					c = Integer.parseInt(choice);
 				} catch (Exception e) {
 					continue;
+				}
+				if(c==7)//cheat in without typing
+				{
+					User boss = new User("JohnDoe", "hunter2", true);
+					enterApplication(con, boss);
+					break;
 				}
 				if (c < 1 | c > 3)
 					continue;
