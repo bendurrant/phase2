@@ -25,10 +25,6 @@ public class driver {
 		System.out.println("Example for cs5530");
 		Connector con=null;
 		String choice;
-		String cname;
-		String dname;
-		String sql=null;
-		//comment
 		int c=0;
 		try
 		{
@@ -49,8 +45,9 @@ public class driver {
 					continue;
 				// Case for logging in
 				if (c == 1) {
-					if(loginUser(con.stmt)){
-						enterApplication(con);
+					User user = loginUser(con.stmt);
+					if(user != null){
+						enterApplication(con, user);
 						break;
 					}
 					
@@ -59,8 +56,9 @@ public class driver {
 				}
 				if (c == 2)
 				{
-					if(registerUser(con.stmt)){
-						enterApplication(con);
+					User user = registerUser(con.stmt);
+					if(user != null){
+						enterApplication(con, user);
 					}
 					break;
 				}
@@ -92,13 +90,11 @@ public class driver {
 				catch (Exception e) { /* ignore close errors */ }
 			}	 
 		}
-		
-
 	}
 	
-	public static boolean registerUser(Statement stmt) throws IOException
+	public static User registerUser(Statement stmt) throws IOException
 	{
-		boolean result = false;
+		User user = null;
 		BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
 		String login, password, name, address, phoneNumber;
 		
@@ -123,28 +119,27 @@ public class driver {
 		try{
 			
 			stmt.executeUpdate(sql);
-			result = true;
+			user = new User(login,password, false);
 			
 			
 		}
 		catch(SQLIntegrityConstraintViolationException e)
 		{
 			System.out.println("Username already exists. Please choose a different username.");
-			return false;
+			
 		}
 		catch(Exception e)
 		{
 			System.out.println("cannot execute the query");
 			System.out.println(e.getMessage());
-			result = false;
 		}
 		
-		return result;
+		return user;
 	}
 
-	public static boolean loginUser(Statement stmt) throws IOException
+	public static User loginUser(Statement stmt) throws IOException
 	{
-		boolean result = false;
+		User user = null;
 		BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
 		String login, password;
 		System.out.println("Enter Login Name: ");
@@ -159,7 +154,10 @@ public class driver {
 		try{
 			
 			rs=stmt.executeQuery(sql);
-			if(rs.first()) result = true;
+			if(rs.first())
+			{
+				user = new User(login, password, rs.getInt("userType") == 1);
+			}
 			
 			
 		}
@@ -179,12 +177,107 @@ public class driver {
 				System.out.println("cannot close resultset");
 			}
 		}
-		return result;
+		return user;
 	}
 	
-	public static void enterApplication(Connector con)
+	public static void enterApplication(Connector con, User user) throws IOException
 	{
+		BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
 		//FIXME Make this.
-		System.out.println("Application entered. Pretend there is a menu.");
+		while (true) 
+		{
+			displayOptions();
+			String choice = null;
+			while ((choice = in.readLine()) == null || choice.length() == 0)
+				;
+			int c = 0;
+			try {
+				c = Integer.parseInt(choice);
+			} catch (Exception e) {
+				c = 100000;
+			}
+			
+			switch(c)
+			{
+			case 1:
+				createListing(con.stmt, user);
+				break;
+			}
+		}
 	}
+	
+	public static void createListing(Statement stmt,User user) throws IOException
+	{
+		BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
+		String category, url, name, address, phone, yearBuilt, priceString;
+		int price = 0;
+		System.out.println("Please Enter TH Category");
+		while ((category = in.readLine()) == null || category.length() == 0 || category.length() > 40) {
+			System.out.println("Invalid response please try again.");
+		}
+		
+		System.out.println("Please enter year th was built:");
+		while ((yearBuilt = in.readLine()) == null || yearBuilt.length() == 0 
+				|| yearBuilt.length() > 4 || !yearBuilt.matches("[0-9]+")) {
+			System.out.println("Invalid response please try again.");
+		}
+
+		System.out.println("Please enter the name for your th:");
+		while ((name = in.readLine()) == null || name.length() == 0 || name.length() > 45) {
+			System.out.println("Invalid response please try again.");
+		}
+
+		System.out.println("Please enter th phone number:");
+		while ((phone = in.readLine()) == null || phone.length() == 0 || phone.length() > 10) {
+			System.out.println("Invalid response please try again.");
+		}
+
+		System.out.println("Please enter the address of the th:");
+		while ((address = in.readLine()) == null || address.length() == 0 || address.length() > 75) {
+			System.out.println("Invalid response please try again.");
+		}
+
+		System.out.println("Please enter th url:");
+		while ((url = in.readLine()) == null || url.length() == 0 || url.length() > 45) {
+			System.out.println("Invalid response please try again.");
+		}
+
+		System.out.println("Please enter price of th per night:");
+		while ((priceString = in.readLine()) == null || priceString.length() == 0 || price == 0) {
+			try {
+				price = Integer.parseInt(priceString);
+				break;
+			} catch (Exception e) {
+				System.out.println("Please provide a number.");
+				continue;
+			}
+		}
+		
+		String sql = "INSERT INTO TH (category, url, name, address, phone, yearBuilt, price, login) VALUES ('"+ category + "', '"+ url + "', '" + name + "', '"+ address + "', '" + phone + "', '" + yearBuilt + "', '" + price + "' ,'" + user.login + "');";
+		System.out.println("executing "+sql);
+		try{
+			
+			stmt.executeUpdate(sql);
+			
+		}
+		catch(SQLIntegrityConstraintViolationException e)
+		{
+			System.out.println("Error please try again");
+		}
+		catch(Exception e)
+		{
+			System.out.println("cannot execute the query");
+			System.out.println(e.getMessage());
+		}
+		
+	}
+		
+	public static void displayOptions()
+	{
+		System.out.println("     Options     ");
+		System.out.println("99. logout");
+		System.out.println("1. Create a new listing");
+	}
+
+
 }
