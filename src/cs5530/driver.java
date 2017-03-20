@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.sql.*;
+import java.util.ArrayList;
 
 public class driver {
 
@@ -210,8 +211,86 @@ public class driver {
 			case 1:
 				createListing(con.stmt, user);
 				break;
+			case 2:
+				//do this
+				break;
+			case 3:
+				browseTH(con.stmt, user);
+			}
+			
+		}
+	}
+	
+	public static void browseTH(Statement stmt, User user) throws IOException
+	{
+		BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
+		ArrayList<Integer> searchPArray = new ArrayList<Integer>();
+		//keywords is probably an arraylist
+		String city,keyWords,category;
+		String searchParams;
+		int priceLow,priceHigh;
+		System.out.println("      Browsing Menu       /n");
+		System.out.println("Please select the parameters of your search");
+		System.out.println("If you wish to select a combination of the following /n then enter all the numbers that correspond to parameters you want to search..");
+		System.out.println("Example (If you wish to search by price and by address simply enter 12");
+		System.out.println("However if you wish to search multiple things but not necessarily in combination.");
+		System.out.println("Simply type a space between the numbers you wish to search. Example 1 2");
+		System.out.println("");
+		System.out.println("1. Price Range");
+		System.out.println("2. Address(city)");
+		System.out.println("3. Name by Keywords");
+		System.out.println("4. Category");
+		while ((searchParams = in.readLine()) == null || searchParams.length() == 0) {
+			try
+			{
+				searchPArray.add(Integer.parseInt(searchParams));
+			}
+			catch(Exception e)
+			{
+				
+				for(String x: searchParams.split(" "))
+				{
+					searchPArray.add(Integer.parseInt(x));
+				}
 			}
 		}
+		for(Integer param : searchPArray)
+		{
+			if(param.toString().contains("1"))
+			{
+				//get price from user
+			}
+			else if(param.toString().contains("2"))
+			{
+				//get city from user
+			}
+			else if(param.toString().contains("3"))
+			{
+				//get keyWords from user
+			}
+			else if(param.toString().contains("4"))
+			{
+				//get category from user
+			}
+		}
+		
+		String filter;
+		System.out.println("Sort by ");
+		System.out.println("1. Price");
+		System.out.println("2. Average feedback score");
+		System.out.println("3. Averge trusted user feedback score");
+		while ((filter = in.readLine()) == null || filter.length() == 0)
+			;
+		try 
+		{
+			int c = Integer.parseInt(filter);
+		} 
+		catch (Exception e)
+		{
+			System.out.println("Please enter valid number");
+		}
+		
+		//do the query
 	}
 	
 	public static void createListing(Statement stmt,User user) throws IOException
@@ -285,6 +364,8 @@ public class driver {
 		System.out.println("     Options     ");
 		System.out.println("0. logout");
 		System.out.println("1. Create a new listing");
+		System.out.println("2. Alter existing TH");
+		System.out.println("3. Browse TH");
 	}
 
 
