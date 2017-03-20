@@ -190,7 +190,7 @@ public class driver {
 			String choice = null;
 			while ((choice = in.readLine()) == null || choice.length() == 0)
 				;
-			int c = 0;
+			int c = 100000;
 			try {
 				c = Integer.parseInt(choice);
 			} catch (Exception e) {
@@ -199,6 +199,14 @@ public class driver {
 			
 			switch(c)
 			{
+			case 0:
+				try {
+					con.stmt.close();
+				} catch (SQLException e) {
+					// TODO Auto-generated catch block
+					//e.printStackTrace();
+				}
+				break;
 			case 1:
 				createListing(con.stmt, user);
 				break;
