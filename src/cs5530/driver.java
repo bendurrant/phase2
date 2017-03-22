@@ -232,7 +232,7 @@ public class driver {
 		BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
 		ArrayList<Integer> searchPArray = new ArrayList<Integer>();
 		//keywords is probably an arraylist
-		String city,keyWords,category;
+		String city,keyWords,category,state;
 		String searchParams;
 		int priceLow,priceHigh;
 		System.out.println("      Browsing Menu       /n");
@@ -244,8 +244,9 @@ public class driver {
 		System.out.println("");
 		System.out.println("1. Price Range");
 		System.out.println("2. Address(city)");
-		System.out.println("3. Name by Keywords");
-		System.out.println("4. Category");
+		System.out.println("2. Address(state)");
+		System.out.println("4. Name by Keywords");
+		System.out.println("5. Category");
 		while ((searchParams = in.readLine()) == null || searchParams.length() == 0) {
 			try
 			{
@@ -272,9 +273,13 @@ public class driver {
 			}
 			else if(param.toString().contains("3"))
 			{
-				//get keyWords from user
+				//get State from user
 			}
 			else if(param.toString().contains("4"))
+			{
+				//get keyWords from user
+			}
+			else if(param.toString().contains("5"))
 			{
 				//get category from user
 			}
@@ -296,7 +301,178 @@ public class driver {
 			System.out.println("Please enter valid number");
 		}
 		
-		//do the query
+//********************The Query*****************************************//
+// Below I have left some tips in how I might go about doing this. 
+// If you no like then you can always do it however you want
+// I was just trying to be helpful.
+		
+		//I would start with some sort of select
+		//where you join all the tables 
+		
+		
+		//deciding if its AND or OR 
+		for(Integer param : searchPArray)
+		{
+			if(param.toString().length()>1)
+			{
+				String paramString = param.toString();
+				//its an and
+				for(char paramChar : paramString.toCharArray())
+				{
+					
+					if(paramChar == '1')
+					{
+					//this means query for price
+					//example sql line 
+					//sql += t.price >= priceLow AND t.price <= priceHigh
+					
+					}
+					
+					else if(paramChar == '2')
+					{
+						//this means query for city
+						//here stone suggests use 
+						// "LIKE %" + city + "%"
+						//the above line is not a complete statement
+					}
+					else if(paramChar == '3')
+					{
+						//this means query for State
+						//use similar Like statement as city
+					}
+					else if(paramChar == '4')
+					{
+						//this means keyword
+						//I have no tips here 
+					}
+					else if(paramChar == '5')
+					{
+						//this is category
+						//I don't really have a tip here either
+						//I don't invision this one being tough though
+					}
+					
+					if(paramString.indexOf(paramChar) != paramString.length()-1)
+					{
+						//if this were true it would be the last of our
+						//AND query so we do this check to see if we need
+						//to append AND
+						//maybe something like
+						//sql += "AND"
+					}
+				}
+				 
+			}
+			else
+				//this is the or statement part
+			{
+				if(param == 1)
+				{
+				//this means query for price
+				//example sql line 
+				//sql += t.price >= priceLow AND t.price <= priceHigh
+				
+				}
+				
+				else if(param == 2)
+				{
+					//this means query for city
+					//here stone suggests use 
+					// "LIKE %" + city + "%"
+					//the above line is not a complete statement
+				}
+				else if(param== 3)
+				{
+					//this means query for State
+					//use similar Like statement as city
+				}
+				else if(param == 4)
+				{
+					//this means keyword
+					//I have no tips here 
+				}
+				else if(param== 5)
+				{
+					//this is category
+					//I don't really have a tip here either
+					//I don't invision this one being tough though
+				}
+				if(searchPArray.indexOf(param) != searchPArray.size()-1)
+				{
+					//if this were true it would be the last of our
+					//OR query so we do this check to see if we need
+					//to append OR
+					//maybe something like
+					//sql += "OR"
+				}
+			}
+		}
+		
+		//Now we apply the search filter
+		if(filter.equals(1))
+		{
+			//this means sort by price
+			//I would assume easiest way to do this would be 
+			//"ORDER BY t.price DESC" 
+			//I believe this will do it by price in descending order
+		}
+		else if(filter.equals(2))
+		{
+			//this means sort by average feedback score
+			//I would assume this will be as easy as the price
+			//"ORDER BY AVG(feedback score) DESC"
+			// this line isn't exact because I don't remember what we called
+			//feedback score
+		}
+		else if(filter.equals(3))
+		{
+			//this is sort by average feedback score from only trusted users
+			//You will have to figure out how to get the average feedback
+			//from only trusted users
+			// I would think you would want to do some sort of select where
+			//you only take user feedback if they are trusted. 
+			//maybe you do this check earlier when you are doing your original
+			//select and you only join it with the feedback table where you
+			//selected only trusted users. If you did this then you wouldn't 
+			//need this if statement and could just use the one above this for
+			//both cases 2 and 3
+			//I don't know what will be easiest.
+			//These are only my suggestions. 
+		}
+		
+		
+		//now execute query.
+		//you will want to save the result set here
+		//ArrayList<TH> thlist = new ArrayList<TH>();
+		//At this moment I don't have a TH class made yet.
+//		try{
+//			//execute the query
+			//iterate throught the result set and create new TH objects
+			//for each line in the result set
+//		}
+//		catch(Exception e)
+//		{
+//			System.out.println("cannot execute query: " + sql);
+//		}
+//		finally{
+//			try{
+//				if(rs != null && !rs.isClosed())
+//				{
+//					rs.close();
+//				}
+//			}
+//			catch(Exception e)
+//			{
+//				System.out.println("cannot close resultset");
+//			}
+//		}
+		
+		// at this point we should have all TH in that array list and we 
+		//probably want some function that will display all of them.
+		//like a displayTH function.
+		//At the moment I am writing this it has not been written.
+		
+		
 	}
 	
 	public static void createListing(Statement stmt,User user) throws IOException
