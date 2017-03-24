@@ -221,13 +221,13 @@ public class driver {
 				//do this
 				break;
 			case 3:
-				browseTH(con.stmt, user);
+				browseTH(con, user);
 			}
 			
 		}
 	}
 	
-	public static void browseTH(Statement stmt, User user) throws IOException
+	public static void browseTH(Connector con, User user) throws IOException
 	{
 		BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
 		ArrayList<Integer> searchPArray = new ArrayList<Integer>();
@@ -468,11 +468,102 @@ public class driver {
 //		}
 		
 		// at this point we should have all TH in that array list and we 
-		//probably want some function that will display all of them.
-		//like a displayTH function.
-		//At the moment I am writing this it has not been written.
+		//call the following function to display
+		//viewTH(thList,con, user);
 		
 		
+	}
+	
+	public static void viewTH(ArrayList<TH> allTH, Connector con, User user) throws IOException
+	{
+		BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
+		while(true)
+		{
+			System.out.println("     Temporary Houses      ");
+			int count = 1;
+			for(TH th: allTH)
+			{
+				//we might need to change how this prints
+				//and get rid of any info that we think
+				//might not be necessary
+				System.out.println(count + th.toString());
+				count++;
+			}
+			System.out.println("Enter the number that of the house you wish to view or enter 0 to return");
+			while(true)
+			{
+				String input = null;
+				while((input = in.readLine()) == null && input.length() == 0)
+					;
+				int inputInt = -1;
+				try{
+					inputInt = Integer.parseInt(input);
+				}
+				catch(Exception e)
+				{
+					System.out.println("Please input valid number");
+					continue;
+				}
+				if(inputInt == 0)
+				{
+					enterApplication(con,user);
+				}
+				if(inputInt <=0 || inputInt > allTH.size())
+				{
+					System.out.println("Please enter valid number");
+				}
+				else
+				{
+					thAction(allTH.get(inputInt-1), con, user);
+					break;
+				}
+			}
+		}
+	}
+	
+	public static void thAction(TH currentTH, Connector con, User user) throws IOException
+	{
+		BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
+		System.out.println("You have selected TH: " + currentTH.toString());
+		while(true)
+		{
+			System.out.println("   TH Actions    ");
+			System.out.println("1. Make a reservation");
+			System.out.println("2. View Feedback");
+			System.out.println("3. Give Feedback");
+			//there is probably more we need to be able to do here
+			//add to the bottom of this list if your thing isn't listed.
+			System.out.println("Enter the Action number or 0 to return");
+			String input = null;
+			while((input = in.readLine()) == null || input.length() == 0)
+				;
+			int inputInt = -1;
+			try{
+				inputInt = Integer.parseInt(input);
+			}
+			catch(Exception e)
+			{
+				System.out.println("Please enter valid number");
+				continue;
+			}
+			if(inputInt == 0)
+			{
+				return;
+			}
+			if(inputInt == 1)
+			{
+				//make reservation
+			}
+			if(inputInt == 2)
+			{
+				//view feedback
+			}
+			if(inputInt == 3)
+			{
+				//give feedback
+			}
+			
+		}
 	}
 	
 	public static void createListing(Statement stmt,User user) throws IOException
