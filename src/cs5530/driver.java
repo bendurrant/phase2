@@ -368,7 +368,6 @@ public class driver {
 	}
 	public static boolean twoDegreesSeparated(Connector con, String firstUser, String secondUser)
 	{
-		//TODO write the query to see if they are 
 		
 		ArrayList<Integer> firstFavs = new ArrayList<Integer>();
 		ArrayList<String> first1DegSep = new ArrayList<String>();
