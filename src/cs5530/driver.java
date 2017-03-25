@@ -749,17 +749,17 @@ public class driver {
 		//keywords is probably an arraylist
 		String city,keyWords,category,state;
 		String searchParams;
-		int priceLow,priceHigh;
+		int priceLow,priceHigh = -1;
 		System.out.println("      Browsing Menu       /n");
 		System.out.println("Please select the parameters of your search");
 		System.out.println("If you wish to select a combination of the following /n then enter all the numbers that correspond to parameters you want to search..");
-		System.out.println("Example (If you wish to search by price and by address simply enter 12");
+		System.out.println("Example (If you wish to search by price AND by address simply enter 12");
 		System.out.println("However if you wish to search multiple things but not necessarily in combination.");
 		System.out.println("Simply type a space between the numbers you wish to search. Example 1 2");
 		System.out.println("");
 		System.out.println("1. Price Range");
 		System.out.println("2. Address(city)");
-		System.out.println("2. Address(state)");
+		System.out.println("3. Address(state)");
 		System.out.println("4. Name by Keywords");
 		System.out.println("5. Category");
 		while ((searchParams = in.readLine()) == null || searchParams.length() == 0) {
@@ -776,11 +776,23 @@ public class driver {
 				}
 			}
 		}
+		String priceL = null;
 		for(Integer param : searchPArray)
 		{
 			if(param.toString().contains("1"))
 			{
-				//get price from user
+				System.out.println("Please Enter a minimum price");
+				while ((priceL = in.readLine()) == null || priceL.length() == 0)
+					;
+				try 
+				{
+					priceLow= Integer.parseInt(priceL);
+				} 
+				catch (Exception e)
+				{
+					System.out.println("Please enter valid number");
+				}
+				//get High Price too
 			}
 			else if(param.toString().contains("2"))
 			{
@@ -823,7 +835,7 @@ public class driver {
 		
 		//I would start with some sort of select
 		//where you join all the tables 
-		
+		//[1,23,4] [23]
 		
 		//deciding if its AND or OR 
 		for(Integer param : searchPArray)
@@ -873,7 +885,11 @@ public class driver {
 						//AND query so we do this check to see if we need
 						//to append AND
 						//maybe something like
-						//sql += "AND"
+						//sql += " AND "
+					}
+					else if(searchPArray.indexOf(param) != searchPArray.size()-1)
+					{
+						//add or
 					}
 				}
 				 
@@ -881,6 +897,7 @@ public class driver {
 			else
 				//this is the or statement part
 			{
+				
 				if(param == 1)
 				{
 				//this means query for price
@@ -921,6 +938,7 @@ public class driver {
 					//sql += "OR"
 				}
 			}
+			
 		}
 		
 		//Now we apply the search filter
