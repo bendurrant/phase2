@@ -860,6 +860,7 @@ public class driver {
 		int priceLow = 0,priceHigh=0;
 		int filterMode;
 		int filterType;
+		
 		System.out.println("      Browsing Menu       /n");
 		System.out.println("Please select the parameters of your search");
 		System.out.println("If you wish to select a combination of the following /n then enter all the numbers that correspond to parameters you want to search..");
@@ -873,7 +874,11 @@ public class driver {
 		System.out.println("2. Address(state)");
 		System.out.println("4. Name by Keywords");
 		System.out.println("5. Category");
-		while ((searchParams = in.readLine()) == null || searchParams.length() == 0) {
+		
+		searchParams=null;
+		while ((searchParams = in.readLine()) == null || searchParams.length() == 0) 
+			;
+		
 			try
 			{
 				searchPArray.add(Integer.parseInt(searchParams));
@@ -886,7 +891,7 @@ public class driver {
 					searchPArray.add(Integer.parseInt(x));
 				}
 			}
-		}
+		
 		for(Integer param : searchPArray)//get price range
 		{
 			String input= null;
@@ -1012,7 +1017,7 @@ public class driver {
 		StringBuilder OrderBy= new StringBuilder();
 		
 		Select.append("SELECT *");
-		From.append("FROM TH ");
+		From.append("FROM 5530db13.TH ");
 		Where.append("WHERE ");
 		OrderBy.append("Order By ");
 		
@@ -1033,7 +1038,7 @@ public class driver {
 					//example sql line 
 					//sql += t.price >= priceLow AND t.price <= priceHigh
 						Where.append("price>= "+priceLow+" AND price <= "+priceHigh+" ");
-					
+						System.out.println();
 					}
 					
 					else if(paramChar == '2')
@@ -1079,6 +1084,8 @@ public class driver {
 				//this means query for price
 				//example sql line 
 				//sql += t.price >= priceLow AND t.price <= priceHigh
+					Where.append("price>= "+priceLow+" AND price <= "+priceHigh+" ");
+					System.out.println();
 				
 				}
 				
@@ -1148,7 +1155,8 @@ public class driver {
 			//These are only my suggestions. 
 		}
 		
-		System.out.println(Select.toString()+From.toString()+Where.toString());
+		String sql=Select.toString()+From.toString()+Where.toString()+";";
+		System.out.println(sql);
 		
 		//now execute query.
 		//you will want to save the result set here
