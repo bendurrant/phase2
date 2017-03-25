@@ -12,6 +12,7 @@ public class driver {
 	/**
 	 * @param args
 	 */
+	static Session currentSession;
 	public static void displayMenu()
 	{
 		System.out.println("		Welcome to the Uotel System     ");
@@ -189,6 +190,7 @@ public class driver {
 	
 	public static void enterApplication(Connector con, User user) throws IOException
 	{
+		currentSession=new Session(user);
 		BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
 		//FIXME Make this.
 		while (true) 
