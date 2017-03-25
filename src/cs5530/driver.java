@@ -225,7 +225,7 @@ public class driver {
 	{
 		currentSession=new Session(user);
 		
-		leaveFeedback(con.stmt, user, 5, "Very different", new TH(5, null, null, null, null, null, null, 0, null));
+	//	leaveFeedback(con.stmt, user, 5, "Very different", new TH(5, null, null, null, null, null, null, 0, null));
 		//rateFeedback(con.stmt,user, 1,0);	
 		//registerUser(con.stmt, "user3", "user3", "User Three","NY User Street", "1234567890",0);
 		
@@ -857,15 +857,16 @@ public class driver {
 		//String[] keywords;	
 		String city,keyWord,category,state;
 		String searchParams;		
-		int priceLow,priceHigh;
+		int priceLow = 0,priceHigh=0;
 		int filterMode;
 		int filterType;
 		System.out.println("      Browsing Menu       /n");
 		System.out.println("Please select the parameters of your search");
 		System.out.println("If you wish to select a combination of the following /n then enter all the numbers that correspond to parameters you want to search..");
-		System.out.println("Example (If you wish to search by price and by address simply enter 12");
-		System.out.println("However if you wish to search multiple things but not necessarily in combination.");
+		System.out.println("Example (If you wish to search by price AND by address simply enter 12");
+		System.out.println("However if you wish to search multiple things but not necessarily in combination (OR).");
 		System.out.println("Simply type a space between the numbers you wish to search. Example 1 2");
+		System.out.println("You can use each option only once.");
 		System.out.println("");
 		System.out.println("1. Price Range");
 		System.out.println("2. Address(city)");
@@ -1031,6 +1032,7 @@ public class driver {
 					//this means query for price
 					//example sql line 
 					//sql += t.price >= priceLow AND t.price <= priceHigh
+						Where.append("price>= "+priceLow+" AND price <= "+priceHigh+" ");
 					
 					}
 					
@@ -1146,6 +1148,7 @@ public class driver {
 			//These are only my suggestions. 
 		}
 		
+		System.out.println(Select.toString()+From.toString()+Where.toString());
 		
 		//now execute query.
 		//you will want to save the result set here
