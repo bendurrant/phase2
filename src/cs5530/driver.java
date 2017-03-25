@@ -266,6 +266,7 @@ public class driver {
 				break;
 			case 6:
 				degreesOfSeperation(con);
+				break;
 			case 8:
 				displayStats(con,user);
 				break;
@@ -290,7 +291,7 @@ public class driver {
 		{
 			System.out.println("Please input a valid Login");
 		}
-		String sql = "Select * From user WHERE login = '" + firstUser + "';";
+		String sql = "Select * From Users WHERE login = '" + firstUser + "';";
 		ResultSet rs = null;
 		boolean isValid = false;
 				try {
@@ -328,7 +329,7 @@ public class driver {
 			{
 				System.out.println("Please input a valid Login");
 			}
-			String sql = "Select * From user WHERE login = '" + secondUser + "';";
+			String sql = "Select * From Users WHERE login = '" + secondUser + "';";
 			ResultSet rs = null;
 			boolean isValid = false;
 					try {
@@ -358,17 +359,121 @@ public class driver {
 		
 		if(twoDegreesSeparated(con,firstUser,secondUser))
 		{
-			System.out.println("yes");
+			System.out.println("yes " + firstUser + " and " + secondUser + " are 2 degrees separated.");
 		}
 		else
 		{
-			System.out.println("no");
+			System.out.println("NO " + firstUser + " and " + secondUser + " are not 2 degrees separated.");
 		}
 	}
 	public static boolean twoDegreesSeparated(Connector con, String firstUser, String secondUser)
 	{
 		//TODO write the query to see if they are 
-		//two degrees apart
+		
+		ArrayList<Integer> firstFavs = new ArrayList<Integer>();
+		ArrayList<String> first1DegSep = new ArrayList<String>();
+		String sql = "select thid From Favorites F2 WHERE F2.login  = '" + firstUser + "';";
+		ResultSet rs = null;
+		try {
+			rs = con.stmt.executeQuery(sql);
+			while(rs.next())
+			{
+				firstFavs.add(rs.getInt("thid"));
+			}
+			rs.close();
+		} catch (Exception e) {
+			System.out.println("cannot execute query: " + sql);
+		} finally {
+			try {
+				if (rs != null && !rs.isClosed())
+					rs.close();
+			} catch (Exception e) {
+				System.out.println("cannot close resultset");
+			}
+		}
+		for(Integer num : firstFavs)
+		{
+		sql = "select F1.login FROM Favorites F1 WHERE F1.login != '" + firstUser + "' AND F1.thid = '" + num + "';";
+		rs = null;
+		
+		try {
+			rs = con.stmt.executeQuery(sql);
+			while(rs.next())
+			{
+				first1DegSep.add(rs.getString("login"));
+			}
+			rs.close();
+		} catch (Exception e) {
+			System.out.println("cannot execute query: " + sql);
+		} finally {
+			try {
+				if (rs != null && !rs.isClosed())
+					rs.close();
+			} catch (Exception e) {
+				System.out.println("cannot close resultset");
+			}
+		}
+		}
+		sql = "select thid From Favorites F2 WHERE F2.login  = '" + secondUser + "';";
+		rs = null;
+		ArrayList<String> second1DegSep = new ArrayList<String>();
+		ArrayList<Integer> secondFavs = new ArrayList<Integer>();
+		try {
+			rs = con.stmt.executeQuery(sql);
+			while(rs.next())
+			{
+				secondFavs.add(rs.getInt("thid"));
+			}
+			rs.close();
+		} catch (Exception e) {
+			System.out.println("cannot execute query: " + sql);
+		} finally {
+			try {
+				if (rs != null && !rs.isClosed())
+					rs.close();
+			} catch (Exception e) {
+				System.out.println("cannot close resultset");
+			}
+		}
+		for(Integer num : secondFavs)
+		{
+		sql = "select F1.login FROM Favorites F1 WHERE F1.login != '" + secondUser + "' AND F1.thid = '" + num + "';";
+		rs = null;
+		
+		try {
+			rs = con.stmt.executeQuery(sql);
+			while(rs.next())
+			{
+				second1DegSep.add(rs.getString("login"));
+			}
+			rs.close();
+		} catch (Exception e) {
+			System.out.println("cannot execute query: " + sql);
+		} finally {
+			try {
+				if (rs != null && !rs.isClosed())
+					rs.close();
+			} catch (Exception e) {
+				System.out.println("cannot close resultset");
+			}
+		}
+		}
+		
+		if(first1DegSep.contains(secondUser))
+		{
+			return false;
+		}
+		else
+		{
+			for(String user : first1DegSep)
+			{
+				if(second1DegSep.contains(user))
+				{
+					return true;
+				}
+			}
+		}
+		
 		return false;
 	}
 	public static void displayStats(Connector con, User user) throws IOException
@@ -856,7 +961,7 @@ public class driver {
 		ArrayList<Integer> searchPArray = new ArrayList<Integer>();
 		//String[] keywords;	
 		String city,keyWord,category,state;
-		String searchParams;		
+		String searchParams = null;		
 		int priceLow,priceHigh;
 		int filterMode;
 		int filterType;
@@ -873,19 +978,23 @@ public class driver {
 		System.out.println("4. Name by Keywords");
 		System.out.println("5. Category");
 		while ((searchParams = in.readLine()) == null || searchParams.length() == 0) {
-			try
+			;
+		}
+		try
+		{
+			System.out.println("here");
+			int w = Integer.parseInt(searchParams);
+			searchPArray.add(w);
+		}
+		catch(Exception e)
+		{
+			System.out.println("or");
+			for(String x: searchParams.split(" "))
 			{
-				searchPArray.add(Integer.parseInt(searchParams));
-			}
-			catch(Exception e)
-			{
-				
-				for(String x: searchParams.split(" "))
-				{
-					searchPArray.add(Integer.parseInt(x));
-				}
+				searchPArray.add(Integer.parseInt(x));
 			}
 		}
+		System.out.println(searchPArray);
 		for(Integer param : searchPArray)//get price range
 		{
 			String input= null;
