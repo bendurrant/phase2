@@ -104,7 +104,33 @@ public class driver {
 			}	 
 		}
 	}
-	
+	public static User registerUser(Statement stmt,String login,String password,String name,String address,String phoneNumber,int isAdmin) throws IOException
+	{
+		User user = null;	
+		
+		String sql = "INSERT INTO Users (login, name, userType, address, phoneNumber, password) VALUES ('"+ login + "', '"+ name + "', '" + isAdmin + "', '"+ address + "', '" + phoneNumber + "', '" + password +"');";
+		
+		System.out.println("executing "+sql);
+		try{
+			
+			stmt.executeUpdate(sql);
+			user = new User(login,password, false);
+			
+			
+		}
+		catch(SQLIntegrityConstraintViolationException e)
+		{
+			System.out.println("Username already exists. Please choose a different username.");
+			
+		}
+		catch(Exception e)
+		{
+			System.out.println("cannot execute the query");
+			System.out.println(e.getMessage());
+		}
+		
+		return user;
+	}
 	public static User registerUser(Statement stmt) throws IOException
 	{
 		User user = null;
@@ -126,27 +152,29 @@ public class driver {
 		System.out.println("Enter phone number: ");
 		while((phoneNumber = in.readLine()) == null || password.length() == 0);
 		
-		String sql = "INSERT INTO Users (login, name, userType, address, phoneNumber, password) VALUES ('"+ login + "', '"+ name + "', '" + "0" + "', '"+ address + "', '" + phoneNumber + "', '" + password +"');";
+		user=registerUser(stmt, login, password, name, address, phoneNumber,0);
 		
-		System.out.println("executing "+sql);
-		try{
-			
-			stmt.executeUpdate(sql);
-			user = new User(login,password, false);
-			
-			
-		}
-		catch(SQLIntegrityConstraintViolationException e)
-		{
-			System.out.println("Username already exists. Please choose a different username.");
-			
-		}
-		catch(Exception e)
-		{
-			System.out.println("cannot execute the query");
-			System.out.println(e.getMessage());
-		}
-		
+//		String sql = "INSERT INTO Users (login, name, userType, address, phoneNumber, password) VALUES ('"+ login + "', '"+ name + "', '" + "0" + "', '"+ address + "', '" + phoneNumber + "', '" + password +"');";
+//		
+//		System.out.println("executing "+sql);
+//		try{
+//			
+//			stmt.executeUpdate(sql);
+//			user = new User(login,password, false);
+//			
+//			
+//		}
+//		catch(SQLIntegrityConstraintViolationException e)
+//		{
+//			System.out.println("Username already exists. Please choose a different username.");
+//			
+//		}
+//		catch(Exception e)
+//		{
+//			System.out.println("cannot execute the query");
+//			System.out.println(e.getMessage());
+//		}
+//		
 		return user;
 	}
 
@@ -196,8 +224,10 @@ public class driver {
 	public static void enterApplication(Connector con, User user) throws IOException
 	{
 		currentSession=new Session(user);
-		leaveFeedback(con.stmt, user, 5, "Very Clean", new TH(5, null, null, null, null, null, null, 0, null));
+		
+		leaveFeedback(con.stmt, user, 5, "Very different", new TH(5, null, null, null, null, null, null, 0, null));
 		//rateFeedback(con.stmt,user, 1,0);	
+		//registerUser(con.stmt, "user3", "user3", "User Three","NY User Street", "1234567890",0);
 		
 		BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
 		while (true) 
@@ -756,6 +786,39 @@ public class driver {
 	}
 	public static void leaveFeedback(Statement stmt,User user,int score,String text,TH th)
 	{
+		String OwnedSql="SELECT * FROM TH WHERE login='"+user.login+"' AND thid="+th.thid+";";
+		
+		ResultSet rs = null; 
+		System.out.println("executing "+OwnedSql);
+		try{
+			
+			rs=stmt.executeQuery(OwnedSql);
+			if(rs.first())
+			{
+				System.out.println("You cannot rate your own TH");
+				return; 
+			}
+			
+			
+		}
+		catch(Exception e)
+		{
+			System.out.println("cannot execute the query");
+			System.out.println(e.getMessage());
+		}
+		finally
+		{
+			try{
+				if (rs!=null && !rs.isClosed())
+					rs.close();
+			}
+			catch(Exception e)
+			{
+				System.out.println("cannot close resultset");
+			}
+		}
+		
+		
 		LocalDate now= LocalDate.now();
 		java.sql.Date sqlDate=java.sql.Date.valueOf(now);
 		
@@ -780,7 +843,7 @@ public class driver {
 		}
 		catch(Exception e)
 		{
-			System.out.println("cannot execute the query");
+			System.out.println("Could not run action: ");
 			System.out.println(e.getMessage());
 			status=false;
 		}
