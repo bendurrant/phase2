@@ -190,7 +190,6 @@ public class driver {
 	public static void enterApplication(Connector con, User user) throws IOException
 	{
 		BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
-		//FIXME Make this.
 		while (true) 
 		{
 			displayOptions();
@@ -209,6 +208,7 @@ public class driver {
 			case 0:
 				try {
 					con.stmt.close();
+					return;
 				} catch (SQLException e) {
 					// TODO Auto-generated catch block
 					//e.printStackTrace();
@@ -218,14 +218,426 @@ public class driver {
 				createListing(con.stmt, user);
 				break;
 			case 2:
-				//do this
+				editListing(con, user);
 				break;
 			case 3:
 				browseTH(con, user);
+				break;
+			case 8:
+				displayStats(con,user);
+				break;
 			}
 			
 		}
 	}
+	public static void displayStats(Connector con, User user) throws IOException
+	{
+		System.out.println("1. View most popular TH by category");
+		System.out.println("2. View most expensive TH by category");
+		System.out.println("3. View highest rated TH by category");
+		System.out.println("Enter a number to see corresponding statistics");
+		BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
+		String input = null;
+		int inputInt = -1;
+		while((input = in.readLine()) == null || input.length() == 0)
+				;
+			try{
+				inputInt = Integer.parseInt(input);
+			}
+			catch(Exception e)
+			{
+				System.out.println("Please input a valid number");
+			}
+		int choice = inputInt;
+		System.out.println("Enter max number of houses to be displayed per Category");
+		while(true)
+		{
+			input = null;
+			int maxEntries = -1;
+			while((input = in.readLine()) == null || input.length() == 0)
+				;
+			try{
+				maxEntries = Integer.parseInt(input);
+			}
+			catch(Exception e)
+			{
+				System.out.println("Please input a valid number");
+				continue;
+			}
+			
+			if(choice == 1)
+			{
+				ArrayList<TH> mostPop = findMostPopular(con);
+				//mostPop = limitToMaxEntries(mostPop, maxEntries);
+				viewTH(mostPop,con,user);
+				
+			}
+			if(choice == 2)
+			{
+				ArrayList<TH> mostExpensive = findMostExpensive(con, maxEntries);
+				//mostExpensive = limitToMaxEntries(mostExpensive, maxEntries);
+				viewTH(mostExpensive,con,user);
+			}
+			if(choice == 3)
+			{
+				ArrayList<TH> bestRated = findBestRated(con);
+				//bestRated = limitToMaxEntries(bestRated, maxEntries);
+				viewTH(bestRated,con,user);
+			}
+		}
+	}
+	
+	
+	public static ArrayList<TH> findBestRated(Connector con)
+	{
+		String sql = "select DISTINCT category AS category FROM TH;";
+		ResultSet rs = null;
+		ArrayList<String> categories = new ArrayList<String>();
+		try{
+			rs = con.stmt.executeQuery(sql);
+			while(rs.next())
+			{
+				 categories.add(rs.getString("category"));
+			}
+			rs.close();
+		}
+		catch(Exception e) {
+			System.out.println("cannot execute query: " + sql);
+			return null;
+		} finally {
+			try {
+				if (rs != null && !rs.isClosed())
+					rs.close();
+			} catch (Exception e) {
+				System.out.println("cannot close resultset");
+			}
+		}
+		ArrayList<TH> returnThList = new ArrayList<TH>();
+		for(String cat : categories)
+		{
+			sql = "";// TODO write correct query!
+			
+			
+			try{
+				rs = con.stmt.executeQuery(sql);
+				while(rs.next())
+				{
+					TH temp = new TH(rs.getInt("thid"), rs.getString("category"), rs.getString("url"), rs.getString("name"), rs.getString("address"), rs.getString("phone"),rs.getString("yearBuilt") , rs.getInt("price"), rs.getString("login"));
+					returnThList.add(temp);
+				}
+				rs.close();
+			}
+			catch(Exception e) {
+				System.out.println("cannot execute query: " + sql);
+				return null;
+			} finally {
+				try {
+					if (rs != null && !rs.isClosed())
+						rs.close();
+				} catch (Exception e) {
+					System.out.println("cannot close resultset");
+				}
+			}
+		}
+		
+		return returnThList;
+	}
+	
+	public static ArrayList<TH> findMostExpensive(Connector con, int rowLimit)
+	{
+		String sql = "select DISTINCT category AS category FROM TH;";
+		ResultSet rs = null;
+		ArrayList<String> categories = new ArrayList<String>();
+		try{
+			rs = con.stmt.executeQuery(sql);
+			while(rs.next())
+			{
+				 categories.add(rs.getString("category"));
+			}
+			rs.close();
+		}
+		catch(Exception e) {
+			System.out.println("cannot execute query: " + sql);
+			return null;
+		} finally {
+			try {
+				if (rs != null && !rs.isClosed())
+					rs.close();
+			} catch (Exception e) {
+				System.out.println("cannot close resultset");
+			}
+		}
+		ArrayList<TH> returnThList = new ArrayList<TH>();
+		for(String cat : categories)
+		{
+			sql = "select * from TH t WHERE t.category ='" + cat + "' Order BY t.price DESC LIMIT "+ rowLimit + ";";
+			
+			
+			try{
+				rs = con.stmt.executeQuery(sql);
+				while(rs.next())
+				{
+					TH temp = new TH(rs.getInt("thid"), rs.getString("category"), rs.getString("url"), rs.getString("name"), rs.getString("address"), rs.getString("phone"),rs.getString("yearBuilt") , rs.getInt("price"), rs.getString("login"));
+					returnThList.add(temp);
+				}
+				rs.close();
+			}
+			catch(Exception e) {
+				System.out.println("cannot execute query: " + sql);
+				return null;
+			} finally {
+				try {
+					if (rs != null && !rs.isClosed())
+						rs.close();
+				} catch (Exception e) {
+					System.out.println("cannot close resultset");
+				}
+			}
+		}
+		
+		return returnThList;
+		
+	}
+	
+	public static ArrayList<TH> findMostPopular(Connector con)
+	{
+		String sql = "select DISTINCT category AS category FROM TH;";
+		ResultSet rs = null;
+		ArrayList<String> categories = new ArrayList<String>();
+		try{
+			rs = con.stmt.executeQuery(sql);
+			while(rs.next())
+			{
+				 categories.add(rs.getString("category"));
+			}
+			rs.close();
+		}
+		catch(Exception e) {
+			System.out.println("cannot execute query: " + sql);
+			return null;
+		} finally {
+			try {
+				if (rs != null && !rs.isClosed())
+					rs.close();
+			} catch (Exception e) {
+				System.out.println("cannot close resultset");
+			}
+		}
+		ArrayList<TH> returnThList = new ArrayList<TH>();
+		for(String cat : categories)
+		{
+			sql = "";// TODO write correct query!
+			
+			
+			try{
+				rs = con.stmt.executeQuery(sql);
+				while(rs.next())
+				{
+					TH temp = new TH(rs.getInt("thid"), rs.getString("category"), rs.getString("url"), rs.getString("name"), rs.getString("address"), rs.getString("phone"),rs.getString("yearBuilt") , rs.getInt("price"), rs.getString("login"));
+					returnThList.add(temp);
+				}
+				rs.close();
+			}
+			catch(Exception e) {
+				System.out.println("cannot execute query: " + sql);
+				return null;
+			} finally {
+				try {
+					if (rs != null && !rs.isClosed())
+						rs.close();
+				} catch (Exception e) {
+					System.out.println("cannot close resultset");
+				}
+			}
+		}
+		
+		return returnThList;
+	}
+	
+	public static void editListing(Connector con,User user) throws IOException
+	{
+		BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
+		ArrayList<TH> usersTH = new ArrayList<TH>();
+		String sql = "Select * from TH where login = '" + user.login + "';";
+		System.out.println("executing "+sql);
+		ResultSet rs = null;
+		
+		try{
+			rs = con.stmt.executeQuery(sql);
+			while(rs.next())
+			{
+				TH th = new TH(rs.getInt("thid"), rs.getString("category"), rs.getString("url"), rs.getString("name"), rs.getString("address"), rs.getString("phone"),rs.getString("yearBuilt") , rs.getInt("price"), rs.getString("login"));
+				usersTH.add(th);
+			}
+			rs.close();
+		}
+		catch(Exception e)
+		{
+			System.out.println("cannot execute query: " + sql);
+		}finally{
+			try{
+				if (rs != null && !rs.isClosed())
+					rs.close();
+			} catch (Exception e) {
+				System.out.println("cannot close resultset");
+			}
+		}
+		
+		
+		if(usersTH.isEmpty())
+		{
+			System.out.println("You don't have any THs to edit");
+			System.out.println("Returning to Main Menu");
+			return;
+		}
+		System.out.println("     Your THs      ");
+		int count = 0;
+		for(TH th: usersTH)
+		{
+			System.out.println(count + ". " + th.toString());
+			count++;
+		}
+		
+		System.out.println("Enter number of TH you wish to update");
+		String input = null;
+		int inputInt = -1;
+		while ((input = in.readLine()) == null || input.length() == 0)
+			;
+		try 
+		{
+			inputInt = Integer.parseInt(input);
+		} 
+		catch (Exception e)
+		{
+			System.out.println("Please enter valid number");
+		}
+		
+		TH selectedTH = usersTH.get(inputInt);
+		boolean update= true;
+		try{
+			while(update == true)
+			{
+				System.out.println("Please enter the number of the field you wish to update");
+				System.out.println("1. Category");
+				System.out.println("2. url");
+				System.out.println("3. name");
+				System.out.println("4. address");
+				System.out.println("5. phone");
+				System.out.println("6. yearBuilt");
+				System.out.println("7. price");
+				System.out.println("8. Keywords");
+				System.out.println("9 Availabilities");
+				System.out.println("10. Finished Updating");
+				while ((input = in.readLine()) == null || input.length() == 0)
+					;
+				try 
+				{
+					inputInt = Integer.parseInt(input);
+				} 
+				catch (Exception e)
+				{
+					System.out.println("Please enter valid number");
+				}
+				switch(inputInt)
+				{
+				case 1:
+					System.out.println("Enter new Category");
+					while ((input = in.readLine()) == null || input.length() == 0 || input.length() > 40)
+						System.out.println("enter valid input");
+					selectedTH.category = input;
+					break;
+				case 2:
+					System.out.println("Enter new URL");
+					while ((input = in.readLine()) == null || input.length() == 0 || input.length() > 45)
+						System.out.println("enter valid input");
+					selectedTH.url = input;
+					break;
+				case 3:
+					System.out.println("Enter new Name");
+					while ((input = in.readLine()) == null || input.length() == 0 || input.length() > 45)
+						System.out.println("enter valid input");
+					selectedTH.name = input;
+					break;	
+				case 4:
+					System.out.println("Enter new address");
+					while ((input = in.readLine()) == null || input.length() == 0 || input.length() > 75)
+						System.out.println("enter valid input");
+					selectedTH.address = input;
+					break;
+				case 5:
+					System.out.println("Enter new phone");
+					while ((input = in.readLine()) == null || input.length() == 0 || input.length() > 10)
+						System.out.println("enter valid input");
+					selectedTH.phone = input;
+					break;
+				case 6:
+					System.out.println("Enter new yearBuilt");
+					while ((input = in.readLine()) == null || input.length() == 0|| input.length() > 4 || !input.matches("[0-9]+"))
+						System.out.println("enter valid input");
+					selectedTH.yearBuilt = input;
+					break;
+					
+				case 7:
+					System.out.println("Enter new price");
+					while ((input = in.readLine()) == null || input.length() == 0 || input == "0")
+						System.out.println("enter valid input");
+					try{
+					selectedTH.price = Integer.parseInt(input);
+					}catch(Exception e)
+					{
+						System.out.println("enter valid number");
+					}
+					break;
+				case 8:
+					System.out.println("Enter new Keyword");
+					//while ((input = in.readLine()) == null || input.length() == 0)
+					//	;
+					//figure out how to do this needs option to add and remove
+					//selectedTH.name = input;
+					break;
+				case 9:
+					System.out.println("Enter new Availability date");
+					//while ((input = in.readLine()) == null || input.length() == 0)
+					//	;
+					//figure out how to do this
+					//most likely needs a date range. From start to end
+					//selectedTH.name = input;
+					break;
+				case 10:
+					System.out.println("Updating TH");
+					sql = "Update TH SET category='" + selectedTH.category + "', url='" + selectedTH.url + "', name='"
+							+ selectedTH.name + "', address='" + selectedTH.address + "', phone='" + selectedTH.phone + "', yearbuilt='"
+							+ selectedTH.yearBuilt + "', price ='" + selectedTH.price + "' WHERE thid='"+ selectedTH.thid +"';";
+					try{
+						System.out.println("executing: " + sql);
+						con.stmt.executeUpdate(sql);
+						
+						
+						
+					}
+					catch(Exception e)
+					{
+						System.out.println("cannot execute the query");
+						System.out.println(e.getMessage());
+					}
+					update = false;
+					break;
+				default:
+					System.out.println("Enter valid selection");
+				}
+				
+				
+				
+			}
+		}
+		catch(Exception e)
+		{
+			System.out.println("error executing query.");
+			return;
+			
+		}
+	}
+	
 	
 	public static void browseTH(Connector con, User user) throws IOException
 	{
@@ -575,7 +987,6 @@ public class driver {
 		while ((category = in.readLine()) == null || category.length() == 0 || category.length() > 40) {
 			System.out.println("Invalid response please try again.");
 		}
-		
 		System.out.println("Please enter year th was built:");
 		while ((yearBuilt = in.readLine()) == null || yearBuilt.length() == 0 
 				|| yearBuilt.length() > 4 || !yearBuilt.matches("[0-9]+")) {
@@ -639,6 +1050,8 @@ public class driver {
 		System.out.println("1. Create a new listing");
 		System.out.println("2. Alter existing TH");
 		System.out.println("3. Browse TH");
+		System.out.println("8. View stats");
+
 	}
 
 
