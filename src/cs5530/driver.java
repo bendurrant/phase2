@@ -513,27 +513,27 @@ public class driver {
 			if(choice == 1)
 			{
 				ArrayList<TH> mostPop = findMostPopular(con);
-				//mostPop = limitToMaxEntries(mostPop, maxEntries);
+				
 				viewTH(mostPop,con,user);
 				
 			}
 			if(choice == 2)
 			{
 				ArrayList<TH> mostExpensive = findMostExpensive(con, maxEntries);
-				//mostExpensive = limitToMaxEntries(mostExpensive, maxEntries);
+				
 				viewTH(mostExpensive,con,user);
 			}
 			if(choice == 3)
 			{
-				ArrayList<TH> bestRated = findBestRated(con);
-				//bestRated = limitToMaxEntries(bestRated, maxEntries);
+				ArrayList<TH> bestRated = findBestRated(con, maxEntries);
+				
 				viewTH(bestRated,con,user);
 			}
 		}
 	}
 	
 	
-	public static ArrayList<TH> findBestRated(Connector con)
+	public static ArrayList<TH> findBestRated(Connector con, int rowLimit)
 	{
 		String sql = "select DISTINCT category AS category FROM TH;";
 		ResultSet rs = null;
@@ -560,7 +560,7 @@ public class driver {
 		ArrayList<TH> returnThList = new ArrayList<TH>();
 		for(String cat : categories)
 		{
-			sql = "";// TODO write correct query!
+			sql = "Select avg(f.score) as average, t.thid, t.category, t.url, t.name,t.address,t.phone,t.yearBuilt,t.price,t.login  From Feedback f, TH t WHERE f.thid = t.thid AND t.category = '"+ cat + "' group by thid order by average DESC Limit "+ rowLimit + "; ";// TODO write correct query!
 			
 			
 			try{
