@@ -4,7 +4,12 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.sql.*;
+import java.time.LocalDate;
 import java.util.ArrayList;
+
+import javax.swing.Spring;
+
+import com.mysql.jdbc.StringUtils;
 
 public class driver {
 
@@ -45,7 +50,7 @@ public class driver {
 				}
 				if(c==7)//cheat in without typing
 				{
-					User boss = new User("JohnDoe", "hunter2", true);
+					User boss = new User("JoshNelson", "IHeartGrannies", true);
 					enterApplication(con, boss);
 					break;
 				}
@@ -191,6 +196,8 @@ public class driver {
 	public static void enterApplication(Connector con, User user) throws IOException
 	{
 		currentSession=new Session(user);
+		leaveFeedback(con.stmt, user, 5, "It was alright", new TH(5, null, null, null, null, null, null, 0, null));
+	
 		BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
 		while (true) 
 		{
@@ -741,25 +748,50 @@ public class driver {
 		}
 	}
 	
+	public static void leaveFeedback(Statement stmt,User user,int score,String text,TH th)
+	{
+		LocalDate now= LocalDate.now();
+		java.sql.Date sqlDate=java.sql.Date.valueOf(now);
+		
+		
+		String sql = "INSERT INTO Feedback (thid, score, text, fbdate, login) VALUES ('"+ th.thid + "', '"+ score + "', '" + text + "', '"+ sqlDate + "', '" + user.login +"');";
+		System.out.println("executing "+sql);
+		try{
+			
+			stmt.executeUpdate(sql);
+			
+		}
+		catch(SQLIntegrityConstraintViolationException e)
+		{
+			System.out.println("Error please try again");
+		}
+		catch(Exception e)
+		{
+			System.out.println("cannot execute the query");
+			System.out.println(e.getMessage());
+		}
+	}
 	
 	public static void browseTH(Connector con, User user) throws IOException
 	{
 		BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
 		ArrayList<Integer> searchPArray = new ArrayList<Integer>();
-		//keywords is probably an arraylist
-		String city,keyWords,category,state;
-		String searchParams;
-		int priceLow,priceHigh = -1;
+		//String[] keywords;	
+		String city,keyWord,category,state;
+		String searchParams;		
+		int priceLow,priceHigh;
+		int filterMode;
+		int filterType;
 		System.out.println("      Browsing Menu       /n");
 		System.out.println("Please select the parameters of your search");
 		System.out.println("If you wish to select a combination of the following /n then enter all the numbers that correspond to parameters you want to search..");
-		System.out.println("Example (If you wish to search by price AND by address simply enter 12");
+		System.out.println("Example (If you wish to search by price and by address simply enter 12");
 		System.out.println("However if you wish to search multiple things but not necessarily in combination.");
 		System.out.println("Simply type a space between the numbers you wish to search. Example 1 2");
 		System.out.println("");
 		System.out.println("1. Price Range");
 		System.out.println("2. Address(city)");
-		System.out.println("3. Address(state)");
+		System.out.println("2. Address(state)");
 		System.out.println("4. Name by Keywords");
 		System.out.println("5. Category");
 		while ((searchParams = in.readLine()) == null || searchParams.length() == 0) {
@@ -776,39 +808,80 @@ public class driver {
 				}
 			}
 		}
-		String priceL = null;
-		for(Integer param : searchPArray)
+		for(Integer param : searchPArray)//get price range
 		{
+			String input= null;
 			if(param.toString().contains("1"))
 			{
-				System.out.println("Please Enter a minimum price");
-				while ((priceL = in.readLine()) == null || priceL.length() == 0)
+			
+				
+				input=null;
+				int out=-1;
+				System.out.println("Please enter the low price range: ");
+				while ((input = in.readLine()) == null || input.length() == 0)
 					;
 				try 
 				{
-					priceLow= Integer.parseInt(priceL);
+					out = Integer.parseInt(input);
 				} 
 				catch (Exception e)
 				{
 					System.out.println("Please enter valid number");
 				}
-				//get High Price too
+				priceLow=out;
+				
+				System.out.println("Please enter the high price range: ");
+				while ((input = in.readLine()) == null || input.length() == 0)
+					;
+				try 
+				{
+					out = Integer.parseInt(input);
+				} 
+				catch (Exception e)
+				{
+					System.out.println("Please enter valid number");
+				}
+				priceHigh=out;
 			}
 			else if(param.toString().contains("2"))
 			{
+				input=null;
 				//get city from user
+				System.out.println("Please enter the city you wish to search for: ");
+				while ((input = in.readLine()) == null || input.length() == 0)
+					;
+				city=input;
+				
 			}
 			else if(param.toString().contains("3"))
 			{
+				input=null;
 				//get State from user
+				System.out.println("Please enter the state you wish to search for: ");
+				while ((input = in.readLine()) == null || input.length() == 0)
+					;
+				state=input;
 			}
 			else if(param.toString().contains("4"))
 			{
 				//get keyWords from user
+				input=null;
+				
+				System.out.println("Please enter the keyword you wish to search for: ");
+				while ((input = in.readLine()) == null || input.length() == 0)
+					;
+				//keywords=input.split(",");
+				keyWord=input;
 			}
 			else if(param.toString().contains("5"))
 			{
 				//get category from user
+				input=null;
+				System.out.println("Please enter the category you wish to search for: ");
+				while ((input = in.readLine()) == null || input.length() == 0)
+					;
+				
+				category=input;
 			}
 		}
 		
@@ -819,15 +892,33 @@ public class driver {
 		System.out.println("3. Averge trusted user feedback score");
 		while ((filter = in.readLine()) == null || filter.length() == 0)
 			;
+		int c=1;
 		try 
 		{
-			int c = Integer.parseInt(filter);
+			c = Integer.parseInt(filter);
 		} 
 		catch (Exception e)
 		{
 			System.out.println("Please enter valid number");
 		}
+		filterType=c;
 		
+		String filter2;
+		System.out.println("Sort ");
+		System.out.println("1. Ascending");
+		System.out.println("2. Descending");		
+		while ((filter2 = in.readLine()) == null || filter2.length() == 0)
+			;
+		int c2=1;
+		try 
+		{
+			c = Integer.parseInt(filter);
+		} 
+		catch (Exception e)
+		{
+			System.out.println("Please enter valid number");
+		}
+		filterMode=c2;
 //********************The Query*****************************************//
 // Below I have left some tips in how I might go about doing this. 
 // If you no like then you can always do it however you want
@@ -835,7 +926,17 @@ public class driver {
 		
 		//I would start with some sort of select
 		//where you join all the tables 
-		//[1,23,4] [23]
+		
+		StringBuilder Select = new StringBuilder();
+		StringBuilder From = new StringBuilder();
+		StringBuilder Where = new StringBuilder();
+		StringBuilder OrderBy= new StringBuilder();
+		
+		Select.append("SELECT *");
+		From.append("FROM TH ");
+		Where.append("WHERE ");
+		OrderBy.append("Order By ");
+		
 		
 		//deciding if its AND or OR 
 		for(Integer param : searchPArray)
@@ -885,11 +986,7 @@ public class driver {
 						//AND query so we do this check to see if we need
 						//to append AND
 						//maybe something like
-						//sql += " AND "
-					}
-					else if(searchPArray.indexOf(param) != searchPArray.size()-1)
-					{
-						//add or
+						//sql += "AND"
 					}
 				}
 				 
@@ -897,7 +994,6 @@ public class driver {
 			else
 				//this is the or statement part
 			{
-				
 				if(param == 1)
 				{
 				//this means query for price
@@ -938,7 +1034,6 @@ public class driver {
 					//sql += "OR"
 				}
 			}
-			
 		}
 		
 		//Now we apply the search filter
@@ -1006,6 +1101,8 @@ public class driver {
 		
 		
 	}
+	
+	
 	
 	public static void viewTH(ArrayList<TH> allTH, Connector con, User user) throws IOException
 	{
