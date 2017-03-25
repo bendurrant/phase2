@@ -192,6 +192,7 @@ public class driver {
 		BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
 		while (true) 
 		{
+			
 			displayOptions();
 			String choice = null;
 			while ((choice = in.readLine()) == null || choice.length() == 0)
@@ -223,12 +224,112 @@ public class driver {
 			case 3:
 				browseTH(con, user);
 				break;
+			case 6:
+				degreesOfSeperation(con);
 			case 8:
 				displayStats(con,user);
 				break;
 			}
 			
 		}
+	}
+	
+	public static void degreesOfSeperation(Connector con) throws IOException
+	{
+		BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
+		String firstUser = null;
+		String secondUser = null;
+		while(true){
+		System.out.println("Enter the first users login");
+		while((firstUser = in.readLine()) == null || firstUser.length() == 0)
+			System.out.println("Please Enter Valid Login");
+		try{
+
+		}
+		catch(Exception e)
+		{
+			System.out.println("Please input a valid Login");
+		}
+		String sql = "Select * From user WHERE login = '" + firstUser + "';";
+		ResultSet rs = null;
+		boolean isValid = false;
+				try {
+					rs = con.stmt.executeQuery(sql);
+					isValid = rs.next();
+					rs.close();
+				}
+		catch (Exception e) {
+			System.out.println("cannot execute query: " + sql);
+		} finally {
+			try {
+				if (rs != null && !rs.isClosed())
+					rs.close();
+			} catch (Exception e) {
+				System.out.println("cannot close resultset");
+			}
+		}
+		if(isValid)
+		{
+			break;
+		}
+		else
+		{
+			System.out.println("Not a valid login");
+		}
+		}
+		while(true){
+			System.out.println("Enter the second users login");
+			while((secondUser = in.readLine()) == null || secondUser.length() == 0)
+				System.out.println("Please Enter Valid Login");
+			try{
+
+			}
+			catch(Exception e)
+			{
+				System.out.println("Please input a valid Login");
+			}
+			String sql = "Select * From user WHERE login = '" + secondUser + "';";
+			ResultSet rs = null;
+			boolean isValid = false;
+					try {
+						rs = con.stmt.executeQuery(sql);
+						isValid = rs.next();
+						rs.close();
+					}
+			catch (Exception e) {
+				System.out.println("cannot execute query: " + sql);
+			} finally {
+				try {
+					if (rs != null && !rs.isClosed())
+						rs.close();
+				} catch (Exception e) {
+					System.out.println("cannot close resultset");
+				}
+			}
+			if(isValid)
+			{
+				break;
+			}
+			else
+			{
+				System.out.println("Not a valid login");
+			}
+			}
+		
+		if(twoDegreesSeparated(con,firstUser,secondUser))
+		{
+			System.out.println("yes");
+		}
+		else
+		{
+			System.out.println("no");
+		}
+	}
+	public static boolean twoDegreesSeparated(Connector con, String firstUser, String secondUser)
+	{
+		//TODO write the query to see if they are 
+		//two degrees apart
+		return false;
 	}
 	public static void displayStats(Connector con, User user) throws IOException
 	{
@@ -1050,6 +1151,7 @@ public class driver {
 		System.out.println("1. Create a new listing");
 		System.out.println("2. Alter existing TH");
 		System.out.println("3. Browse TH");
+		System.out.println("6. Degrees of Seperation");
 		System.out.println("8. View stats");
 
 	}
