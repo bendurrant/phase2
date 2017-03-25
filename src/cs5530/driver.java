@@ -196,8 +196,9 @@ public class driver {
 	public static void enterApplication(Connector con, User user) throws IOException
 	{
 		currentSession=new Session(user);
-		leaveFeedback(con.stmt, user, 5, "It was alright", new TH(5, null, null, null, null, null, null, 0, null));
-	
+		leaveFeedback(con.stmt, user, 5, "Very Clean", new TH(5, null, null, null, null, null, null, 0, null));
+		//rateFeedback(con.stmt,user, 1,0);	
+		
 		BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
 		while (true) 
 		{
@@ -747,7 +748,12 @@ public class driver {
 			
 		}
 	}
-	
+	public static void rateFeedback(Statement stmt,User user, int fid, int rating)	
+	{
+		String sql = "INSERT INTO Rates (login, fid, rating) VALUES ('"+ user.login + "', '"+ fid + "', '" + rating +"');";
+		executeStatementUpdate(stmt,sql);
+		
+	}
 	public static void leaveFeedback(Statement stmt,User user,int score,String text,TH th)
 	{
 		LocalDate now= LocalDate.now();
@@ -755,6 +761,12 @@ public class driver {
 		
 		
 		String sql = "INSERT INTO Feedback (thid, score, text, fbdate, login) VALUES ('"+ th.thid + "', '"+ score + "', '" + text + "', '"+ sqlDate + "', '" + user.login +"');";
+		executeStatementUpdate(stmt,sql);
+	}
+	
+	public static boolean executeStatementUpdate(Statement stmt, String sql)
+	{
+		boolean status=true;
 		System.out.println("executing "+sql);
 		try{
 			
@@ -764,14 +776,17 @@ public class driver {
 		catch(SQLIntegrityConstraintViolationException e)
 		{
 			System.out.println("Error please try again");
+			status=false;
 		}
 		catch(Exception e)
 		{
 			System.out.println("cannot execute the query");
 			System.out.println(e.getMessage());
+			status=false;
 		}
+		
+		return status;
 	}
-	
 	public static void browseTH(Connector con, User user) throws IOException
 	{
 		BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
