@@ -7,9 +7,6 @@ import java.sql.*;
 import java.time.LocalDate;
 import java.util.ArrayList;
 
-import javax.swing.Spring;
-
-import com.mysql.jdbc.StringUtils;
 
 public class driver {
 
@@ -958,12 +955,14 @@ public class driver {
 	{
 		BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
 		ArrayList<Integer> searchPArray = new ArrayList<Integer>();
+		boolean[] used=new boolean[5];
 		//String[] keywords;	
-		String city,keyWord,category,state;
+		String city = null,keyWord = null,category,state = null;
 		String searchParams = null;				
 		int priceLow = 0,priceHigh=0;
 		int filterMode;
 		int filterType;
+		String sqlFilterString=null;
 		
 		System.out.println("      Browsing Menu       /n");
 		System.out.println("Please select the parameters of your search");
@@ -975,7 +974,7 @@ public class driver {
 		System.out.println("");
 		System.out.println("1. Price Range");
 		System.out.println("2. Address(city)");
-		System.out.println("2. Address(state)");
+		System.out.println("3. Address(state)");
 		System.out.println("4. Name by Keywords");
 		System.out.println("5. Category");
 
@@ -987,6 +986,7 @@ public class driver {
 				try
 				{
 				searchPArray.add(Integer.parseInt(searchParams));
+				
 				}
 				catch(Exception e)
 				{
@@ -1031,7 +1031,7 @@ public class driver {
 				}
 				priceHigh=out;
 			}
-			else if(param.toString().contains("2"))
+			if(param.toString().contains("2"))
 			{
 				input=null;
 				//get city from user
@@ -1041,7 +1041,7 @@ public class driver {
 				city=input;
 				
 			}
-			else if(param.toString().contains("3"))
+			 if(param.toString().contains("3"))
 			{
 				input=null;
 				//get State from user
@@ -1050,7 +1050,7 @@ public class driver {
 					;
 				state=input;
 			}
-			else if(param.toString().contains("4"))
+			 if(param.toString().contains("4"))
 			{
 				//get keyWords from user
 				input=null;
@@ -1061,7 +1061,7 @@ public class driver {
 				//keywords=input.split(",");
 				keyWord=input;
 			}
-			else if(param.toString().contains("5"))
+			if(param.toString().contains("5"))
 			{
 				//get category from user
 				input=null;
@@ -1097,16 +1097,29 @@ public class driver {
 		System.out.println("2. Descending");		
 		while ((filter2 = in.readLine()) == null || filter2.length() == 0)
 			;
-		int c2=1;
+		int c2=-1;
 		try 
 		{
-			c = Integer.parseInt(filter);
+			c2 = Integer.parseInt(filter2);
 		} 
 		catch (Exception e)
 		{
 			System.out.println("Please enter valid number");
 		}
 		filterMode=c2;
+		switch(filterMode)
+		{
+		case 1:
+			sqlFilterString="asc";
+			break;
+		case 2:
+			sqlFilterString="desc";
+			break;
+		default:
+			System.out.println("Invalid input: defaulting to Ascending");
+			sqlFilterString="asc";
+			break;
+		}
 //********************The Query*****************************************//
 // Below I have left some tips in how I might go about doing this. 
 // If you no like then you can always do it however you want
@@ -1121,10 +1134,11 @@ public class driver {
 		StringBuilder OrderBy= new StringBuilder();
 		
 		Select.append("SELECT *");
-		From.append("FROM 5530db13.TH ");
+		From.append("FROM 5530db13.TH t ");
 		Where.append("WHERE ");
 		OrderBy.append("Order By ");
 		
+		boolean newGroup=false;
 		
 		//deciding if its AND or OR 
 		for(Integer param : searchPArray)
@@ -1135,6 +1149,11 @@ public class driver {
 				//its an and
 				for(char paramChar : paramString.toCharArray())
 				{
+					if(newGroup)
+					{
+						Where.append(" AND ");
+						newGroup=false;
+					}
 					
 					if(paramChar == '1')
 					{
@@ -1142,7 +1161,7 @@ public class driver {
 					//example sql line 
 					//sql += t.price >= priceLow AND t.price <= priceHigh
 						Where.append("price>= "+priceLow+" AND price <= "+priceHigh+" ");
-						System.out.println();
+						
 					}
 					
 					else if(paramChar == '2')
@@ -1151,16 +1170,20 @@ public class driver {
 						//here stone suggests use 
 						// "LIKE %" + city + "%"
 						//the above line is not a complete statement
+						//where LOWER(column_name) LIKE LOWER('%vAlUe%');
+						Where.append("LOWER(address) LIKE LOWER('%"+city+"%') ");
 					}
 					else if(paramChar == '3')
 					{
 						//this means query for State
 						//use similar Like statement as city
+						Where.append("LOWER(address) LIKE LOWER('%"+state+"%') ");
 					}
 					else if(paramChar == '4')
 					{
 						//this means keyword
 						//I have no tips here 
+						Where.append(" LOWER('"+keyWord+"') in (SELECT LOWER(word) FROM HasKeywords natural join Keywords where thid=t.thid) ");
 					}
 					else if(paramChar == '5')
 					{
@@ -1176,12 +1199,21 @@ public class driver {
 						//to append AND
 						//maybe something like
 						//sql += "AND"
+						Where.append(" AND ");
+					}else
+					{
+						newGroup=true;//tell the next clause generator to append
+						newGroup=false;
 					}
 				}
 				 
 			}
 			else
 				//this is the or statement part
+				if(newGroup)
+				{
+					Where.append(" OR ");
+				}
 			{
 				if(param == 1)
 				{
@@ -1199,16 +1231,19 @@ public class driver {
 					//here stone suggests use 
 					// "LIKE %" + city + "%"
 					//the above line is not a complete statement
+					Where.append("LOWER(address) LIKE LOWER('%"+city+"%') ");
 				}
 				else if(param== 3)
 				{
 					//this means query for State
 					//use similar Like statement as city
+					Where.append("LOWER(address) LIKE LOWER('%"+state+"%') ");
 				}
 				else if(param == 4)
 				{
 					//this means keyword
 					//I have no tips here 
+					Where.append(" LOWER('"+keyWord+"') in (SELECT LOWER(word) FROM HasKeywords natural join Keywords where thid=t.thid) ");
 				}
 				else if(param== 5)
 				{
@@ -1223,19 +1258,25 @@ public class driver {
 					//to append OR
 					//maybe something like
 					//sql += "OR"
+					Where.append(" OR ");
+				}else
+				{
+					newGroup=true;//tell the next clause generator to append
 				}
 			}
 		}
 		
+
 		//Now we apply the search filter
-		if(filter.equals(1))
+		if(filterType==1)
 		{
 			//this means sort by price
 			//I would assume easiest way to do this would be 
 			//"ORDER BY t.price DESC" 
 			//I believe this will do it by price in descending order
+			OrderBy.append(" price ");
 		}
-		else if(filter.equals(2))
+		else if(filterType==2)
 		{
 			//this means sort by average feedback score
 			//I would assume this will be as easy as the price
@@ -1243,7 +1284,7 @@ public class driver {
 			// this line isn't exact because I don't remember what we called
 			//feedback score
 		}
-		else if(filter.equals(3))
+		else if(filterType==3)
 		{
 			//this is sort by average feedback score from only trusted users
 			//You will have to figure out how to get the average feedback
@@ -1259,7 +1300,9 @@ public class driver {
 			//These are only my suggestions. 
 		}
 		
-		String sql=Select.toString()+From.toString()+Where.toString()+";";
+		OrderBy.append(sqlFilterString);//set asc or desc
+		
+		String sql=Select.toString()+From.toString()+Where.toString()+OrderBy.toString()+";";
 		System.out.println(sql);
 		
 		//now execute query.
