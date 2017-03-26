@@ -29,7 +29,7 @@ public class TH {
 	{
 		return "[thid: "+ String.valueOf(thid) +", category: " + category + ", url: " 
 				+ url + ", name: " + name + ", address: " + address + ", phone: "
-				+ phone + ", year built:" + yearBuilt + ", price:" + price + ", login"
+				+ phone + ", year built: " + yearBuilt + ", price: " + price + ", login: "
 				+ login + "]";
 	}
 	

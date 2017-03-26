@@ -1497,37 +1497,46 @@ public class driver {
 		OrderBy.append(sqlFilterString);//set asc or desc
 		
 		String sql=Select.toString()+From.toString()+Where.toString()+OrderBy.toString()+";";
-		System.out.println(sql);
 		
 		//now execute query.
 		//you will want to save the result set here
-		//ArrayList<TH> thlist = new ArrayList<TH>();
+		ArrayList<TH> thList = new ArrayList<TH>();
+		ResultSet rs = null;
 		//At this moment I don't have a TH class made yet.
-//		try{
-//			//execute the query
+		try{
+		//execute the query
 			//iterate throught the result set and create new TH objects
 			//for each line in the result set
-//		}
-//		catch(Exception e)
-//		{
-//			System.out.println("cannot execute query: " + sql);
-//		}
-//		finally{
-//			try{
-//				if(rs != null && !rs.isClosed())
-//				{
-//					rs.close();
-//				}
-//			}
-//			catch(Exception e)
-//			{
-//				System.out.println("cannot close resultset");
-//			}
-//		}
+			System.out.println("Executing: "+sql);
+		 rs = con.stmt.executeQuery(sql);
+		 
+		 while(rs.next())
+			{
+				TH temp = new TH(rs.getInt("thid"), rs.getString("category"), rs.getString("url"), rs.getString("name"), rs.getString("address"), rs.getString("phone"),rs.getString("yearBuilt") , rs.getInt("price"), rs.getString("login"));
+				thList.add(temp);
+			}
+		 
+		}
+		catch(Exception e)
+		{
+			System.out.println("cannot execute query: ");
+		}
+		finally{
+			try{
+				if(rs != null && !rs.isClosed())
+				{
+					rs.close();
+				}
+			}
+			catch(Exception e)
+			{
+				System.out.println("cannot close resultset");
+			}
+		}
 		
 		// at this point we should have all TH in that array list and we 
 		//call the following function to display
-		//viewTH(thList,con, user);
+		viewTH(thList,con, user);
 		
 		
 	}
