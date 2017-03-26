@@ -21,4 +21,9 @@ public class User {
 	{
 		reservations.add(new Reservation(th,start,stop));
 	}
+	@Override
+	public String toString()
+	{
+		return login;
+	}
 }

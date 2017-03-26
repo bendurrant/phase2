@@ -229,8 +229,13 @@ public class driver {
 		BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
 		while (true) 
 		{
-			
 			displayOptions();
+			if(user.isAdmin)
+			{
+				System.out.println("1234. View top trusted users");
+				System.out.println("5678 View top useful users");
+			}
+			
 			String choice = null;
 			while ((choice = in.readLine()) == null || choice.length() == 0)
 				;
@@ -276,10 +281,121 @@ public class driver {
 			case 8:
 				displayStats(con,user);
 				break;
+			case 1234:
+				if(!user.isAdmin)
+				{
+					System.out.println("you must be an admin to access");
+					break;
+				}
+				showTrustedUsers(con,user);
+				break;
+			case 5678:
+				if(!user.isAdmin)
+				{
+					System.out.println("you must be an admin to access");
+					break;
+				}
+				showUsefulUsers(con, user);
+				break;
+			
 			}
+			
 			
 		}
 	}
+	
+	public static void showTrustedUsers(Connector con, User user) throws IOException
+	{
+		BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
+		String input = null;
+		System.out.println("Please enter max number of rows");
+		int maxEntries = -1;
+		while((input = in.readLine()) == null || input.length() == 0)
+			;
+		try{
+			maxEntries = Integer.parseInt(input);
+		}
+		catch(Exception e)
+		{
+			System.out.println("Please input a valid number");
+		}
+		String sql = "select login, count(if(isTrusted = True, True, Null)) - count(if(isTrusted = false, True, Null)) as score From Users left outer join Trust on Users.login = Trust.Trustee group by login order by score DESC limit "+maxEntries+";";
+		ArrayList<String> users = new ArrayList<String>();
+		ResultSet rs = null; 
+		try{
+			rs = con.stmt.executeQuery(sql);
+			while(rs.next())
+			{
+				users.add(rs.getString("login"));
+			}
+			rs.close();
+		}
+		catch(Exception e) {
+			System.out.println("cannot execute query: " + sql);
+		} finally {
+			try {
+				if (rs != null && !rs.isClosed())
+					rs.close();
+			} catch (Exception e) {
+				System.out.println("cannot close resultset");
+			}
+		}
+		displayUsers(con,user,users);
+	}
+	
+	public static void displayUsers(Connector con, User user, ArrayList<String> users)
+	{
+		int count = 1;
+		for(String currentUser: users)
+		{
+			//we might need to change how this prints
+			//and get rid of any info that we think
+			//might not be necessary
+			System.out.println(count + ". " + currentUser.toString());
+			count++;
+		}
+	}
+	
+	public static void showUsefulUsers(Connector con, User user) throws IOException
+	{
+		BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
+		String input = null;
+		System.out.println("Please enter max number of rows");
+		int maxEntries = -1;
+		while((input = in.readLine()) == null || input.length() == 0)
+			;
+		try{
+			maxEntries = Integer.parseInt(input);
+		}
+		catch(Exception e)
+		{
+			System.out.println("Please input a valid number");
+		}
+		//TODO change query 
+		String sql = "select login from Users u left outer join(select login as login2, avg(rating) as average From  Rates group by login) as rating on u.login = rating.login2 order by average DESC limit "+maxEntries+";";
+		ArrayList<String> users = new ArrayList<String>();
+		ResultSet rs = null; 
+		try{
+			rs = con.stmt.executeQuery(sql);
+			while(rs.next())
+			{
+				users.add(rs.getString("login"));
+			}
+			rs.close();
+		}
+		catch(Exception e) {
+			System.out.println("cannot execute query: " + sql);
+		} finally {
+			try {
+				if (rs != null && !rs.isClosed())
+					rs.close();
+			} catch (Exception e) {
+				System.out.println("cannot close resultset");
+			}
+		}
+		displayUsers(con,user,users);
+	}
+	
 	
 	public static void degreesOfSeperation(Connector con) throws IOException
 	{
@@ -1699,6 +1815,7 @@ public class driver {
 		}
 		else
 		{
+			
 			System.out.println("Please enter max number of rows");
 			String input = null;
 			int maxEntries = -1;
