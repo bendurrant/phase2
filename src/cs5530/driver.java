@@ -141,13 +141,13 @@ public class driver {
 		while((password = in.readLine()) == null || password.length() == 0);
 		
 		System.out.println("Enter name:");
-		while((name = in.readLine()) == null || login.length() == 0);
+		while((name = in.readLine()) == null || name.length() == 0);
 
 		System.out.println("Enter address: ");
-		while((address = in.readLine()) == null || password.length() == 0);
+		while((address = in.readLine()) == null || address.length() == 0);
 		
 		System.out.println("Enter phone number: ");
-		while((phoneNumber = in.readLine()) == null || password.length() == 0);
+		while((phoneNumber = in.readLine()) == null || phoneNumber.length() == 0);
 		
 		user=registerUser(stmt, login, password, name, address, phoneNumber,0);
 		
@@ -244,13 +244,19 @@ public class driver {
 			switch(c)
 			{
 			case 0:
-				try {
-					con.stmt.close();
-					return;
-				} catch (SQLException e) {
-					// TODO Auto-generated catch block
-					//e.printStackTrace();
-				}
+				
+					if(con!= null){
+					try
+					{
+						con.closeConnection();
+						System.out.println ("Database connection terminated");
+						System.exit(0);
+					}
+
+					catch (Exception e) { /* ignore close errors */ }
+				}	
+				
+				 
 				break;
 			case 1:
 				createListing(con.stmt, user);
@@ -1057,6 +1063,38 @@ public class driver {
 		executeStatementUpdate(stmt,sql);
 		
 	}
+	
+	public static void giveFeedback(TH th, Connector con, User user) throws IOException
+	{
+		BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
+		System.out.println("Please enter score");
+		String input = null;
+		int score = -1; 
+		String comment = null;
+		while((input = in.readLine()) == null && input.length() == 0)
+			;
+		int inputInt = -1;
+		try{
+			inputInt = Integer.parseInt(input);
+			score = inputInt;
+		}
+		catch(Exception e)
+		{
+			System.out.println("Please input valid number");
+		}
+		System.out.println("Please enter comment or enter 0 to not leave a comment");
+		while((input = in.readLine()) == null && input.length() == 0)
+			;
+		if(input.equals("0"))
+		{
+			comment = "";
+		}
+		else
+		{
+			comment = input;
+		}
+		leaveFeedback(con.stmt,user,score,comment,th);
+	}
 	public static void leaveFeedback(Statement stmt,User user,int score,String text,TH th)
 	{
 		String OwnedSql="SELECT * FROM TH WHERE login='"+user.login+"' AND thid="+th.thid+";";
@@ -1602,7 +1640,7 @@ public class driver {
 			}
 			if(inputInt == 3)
 			{
-				//give feedback
+				giveFeedback(currentTH, con,user);
 			}
 			if(inputInt == 4)
 			{
