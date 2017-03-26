@@ -957,7 +957,7 @@ public class driver {
 		ArrayList<Integer> searchPArray = new ArrayList<Integer>();
 		boolean[] used=new boolean[5];
 		//String[] keywords;	
-		String city = null,keyWord = null,category,state = null;
+		String city = null,keyWord = null,category=null,state = null;
 		String searchParams = null;				
 		int priceLow = 0,priceHigh=0;
 		int filterMode;
@@ -1189,7 +1189,8 @@ public class driver {
 					{
 						//this is category
 						//I don't really have a tip here either
-						//I don't invision this one being tough though
+						//I don't envision this one being tough though
+						Where.append(" LOWER(category) = LOWER('"+category+"') ");
 					}
 					
 					if(paramString.indexOf(paramChar) != paramString.length()-1)
@@ -1249,7 +1250,8 @@ public class driver {
 				{
 					//this is category
 					//I don't really have a tip here either
-					//I don't invision this one being tough though
+					//I don't envision this one being tough though
+					Where.append(" LOWER(category) = LOWER('"+category+"') ");
 				}
 				if(searchPArray.indexOf(param) != searchPArray.size()-1)
 				{
