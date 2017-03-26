@@ -563,7 +563,8 @@ public class driver {
 		ArrayList<TH> returnThList = new ArrayList<TH>();
 		for(String cat : categories)
 		{
-			sql = "Select avg(f.score) as average, t.thid, t.category, t.url, t.name,t.address,t.phone,t.yearBuilt,t.price,t.login  From Feedback f, TH t WHERE f.thid = t.thid AND t.category = '"+ cat + "' group by thid order by average DESC Limit "+ rowLimit + "; ";// TODO write correct query!
+			sql = "select * from TH t  left outer join (select thid as thid2, AVG(score)as average from Feedback group by thid ) as rating on t.thid= rating.thid2   where t.category = '" + cat + "' order by average DESC limit "+rowLimit+";";
+// TODO write correct query!
 			
 			
 			try{
@@ -572,6 +573,7 @@ public class driver {
 				{
 					TH temp = new TH(rs.getInt("thid"), rs.getString("category"), rs.getString("url"), rs.getString("name"), rs.getString("address"), rs.getString("phone"),rs.getString("yearBuilt") , rs.getInt("price"), rs.getString("login"));
 					returnThList.add(temp);
+					
 				}
 				rs.close();
 			}
@@ -1716,13 +1718,14 @@ public class driver {
 	public static void feedbackActions(Feedback feedback, TH th, Connector con, User user) throws IOException
 	{
 		BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
-		System.out.println("Please select feedback Action");
-		System.out.println("1. Rate Feedback");
-		System.out.println("2. Trust User");
-		System.out.println("0. return");
+		
 		String input = null;
 		while(true)
 		{
+			System.out.println("Please select feedback Action");
+			System.out.println("1. Rate Feedback");
+			System.out.println("2. Trust/Untrust User");
+			System.out.println("0. return");
 			while((input = in.readLine()) == null && input.length() == 0)
 				;
 			int inputInt = -1;
@@ -1739,12 +1742,45 @@ public class driver {
 			}
 			else if(inputInt == 2)
 			{
-				//TODO Trust user
+				trustUser(feedback, con, user);
 			}
 			else if(inputInt == 0)
 			{
 				return;
 			}
+		}
+		
+	}
+	
+	public static void trustUser(Feedback feedback,Connector con,User user) throws IOException
+	{
+		BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
+		System.out.println("1. mark user as trusted");
+		System.out.println("0. mark user as untrusted");
+		String input = null;
+		while((input = in.readLine()) == null && input.length() == 0 && (input != "0" || input!= "1"))
+			System.out.println("please enter either 1 or 0");;
+		int inputInt = -1;
+		try{
+			inputInt = Integer.parseInt(input);
+		}
+		catch(Exception e)
+		{
+			System.out.println("Please input valid number");
+			
+		}
+		String sql = null;
+
+		sql = "insert into Trust (isTrusted, Truster, Trustee) VALUES ('"+inputInt+"', '" + user.login+ "', '" + feedback.login +  "');";
+		try {
+			con.stmt.executeUpdate(sql);
+			System.out.println("Trustworthiness successfully added");
+		} catch (java.sql.SQLIntegrityConstraintViolationException e) {
+			System.out.println("You already trusted/untrusted this user");
+			return;
+		} catch (Exception e) {
+			System.out.println("Cannot execute the query." + sql);
+			return;
 		}
 		
 	}
