@@ -244,8 +244,10 @@ public class driver {
 			switch(c)
 			{
 			case 0:
-				
-				confirmReservations(user);//confirm the reservations in the shoppoing cart
+				if(!user.reservations.isEmpty())
+				{
+					confirmReservations(user);//confirm the reservations in the shoppoing cart
+				}
 					if(con!= null){
 					try
 					{
