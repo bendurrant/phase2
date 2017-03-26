@@ -27,10 +27,10 @@ public class TH {
 	@Override
 	public String toString()
 	{
-		return "TH[hid: "+ String.valueOf(thid) +", category: " + category + ", url: " 
+		return "[thid: "+ String.valueOf(thid) +", category: " + category + ", url: " 
 				+ url + ", name: " + name + ", address: " + address + ", phone: "
 				+ phone + ", year built:" + yearBuilt + ", price:" + price + ", login"
-				+ login;
+				+ login + "]";
 	}
 	
 	

@@ -1302,7 +1302,7 @@ public class driver {
 				//we might need to change how this prints
 				//and get rid of any info that we think
 				//might not be necessary
-				System.out.println(count + th.toString());
+				System.out.println(count + ", " + th.toString());
 				count++;
 			}
 			System.out.println("Enter the number that of the house you wish to view or enter 0 to return");
@@ -1347,6 +1347,7 @@ public class driver {
 			System.out.println("1. Make a reservation");
 			System.out.println("2. View Feedback");
 			System.out.println("3. Give Feedback");
+			System.out.println("4. Declare this TH a Favorite");
 			//there is probably more we need to be able to do here
 			//add to the bottom of this list if your thing isn't listed.
 			System.out.println("Enter the Action number or 0 to return");
@@ -1378,7 +1379,29 @@ public class driver {
 			{
 				//give feedback
 			}
+			if(inputInt == 4)
+			{
+				favorite(currentTH, con, user);
+			}
 			
+		}
+	}
+	
+	public static void favorite(TH th, Connector con, User user)
+	{
+		LocalDate now= LocalDate.now();
+		java.sql.Date sqlDate=java.sql.Date.valueOf(now);
+		System.out.println("Now adding " + th.name + " as a new favorite.");
+		String sql = "INSERT INTO Favorites (thid, login, fvdate) VALUES ('"+ th.thid + "', '"+ user.login + "', '" + sqlDate + "');";
+		try {
+			con.stmt.executeUpdate(sql);
+			System.out.println(user.login + " now favorites the following" + th);
+		} catch (java.sql.SQLIntegrityConstraintViolationException e) {
+			System.out.println("You already favorite this place.");
+			return;
+		} catch (Exception e) {
+			System.out.println("Cannot execute the query.");
+			return;
 		}
 	}
 	
