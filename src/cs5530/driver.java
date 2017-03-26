@@ -1305,10 +1305,28 @@ public class driver {
 		StringBuilder Where = new StringBuilder();
 		StringBuilder OrderBy= new StringBuilder();
 		
-		Select.append("SELECT *");
-		From.append("FROM 5530db13.TH t ");
+		Select.append("SELECT * ");
+		From.append("FROM 5530db13.TH t  ");
 		Where.append("WHERE ");
 		OrderBy.append("Order By ");
+		
+		
+		switch(filterType)
+		{
+		case 1://price do nothing 
+			
+			break;
+			
+		case 2:
+			From.append("left outer join (SELECT thid as thid2 , AVG(score) avgScore FROM 5530db13.Feedback group by thid)as rating ON t.thid=rating.thid2 ");
+			break;
+			
+		case 3:
+			From.append("left outer join (SELECT thid as thid2,AVG(score) as avgScore FROM 5530db13.Feedback WHERE login in (Select Trustee FROM 5530db13.Trust WHERE Truster='"+user.login+"' AND isTrusted=1) group by thid)as rating ON t.thid=rating.thid2 ");
+			break;
+			
+		}
+		
 		
 		boolean newGroup=false;
 		
@@ -1457,6 +1475,7 @@ public class driver {
 			//"ORDER BY AVG(feedback score) DESC"
 			// this line isn't exact because I don't remember what we called
 			//feedback score
+			OrderBy.append(" avgScore ");
 		}
 		else if(filterType==3)
 		{
@@ -1472,6 +1491,7 @@ public class driver {
 			//both cases 2 and 3
 			//I don't know what will be easiest.
 			//These are only my suggestions. 
+			OrderBy.append(" avgScore ");
 		}
 		
 		OrderBy.append(sqlFilterString);//set asc or desc
