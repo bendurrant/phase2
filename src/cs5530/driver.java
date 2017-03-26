@@ -1641,8 +1641,9 @@ public class driver {
 			System.out.println("   TH Actions    ");
 			System.out.println("1. Make a reservation");
 			System.out.println("2. View Feedback");
-			System.out.println("3. Give Feedback");
-			System.out.println("4. Declare this TH a Favorite");
+			System.out.println("3. View most useful feedbacks");
+			System.out.println("4. Give Feedback");
+			System.out.println("5. Declare this TH a Favorite");
 			//there is probably more we need to be able to do here
 			//add to the bottom of this list if your thing isn't listed.
 			System.out.println("Enter the Action number or 0 to return");
@@ -1668,13 +1669,17 @@ public class driver {
 			}
 			if(inputInt == 2)
 			{
-				viewFeedback(currentTH,con,user);
+				viewFeedback(currentTH,con,user,true);
 			}
 			if(inputInt == 3)
 			{
-				giveFeedback(currentTH, con,user);
+				viewFeedback(currentTH, con, user, false);
 			}
 			if(inputInt == 4)
+			{
+				giveFeedback(currentTH, con,user);
+			}
+			if(inputInt == 5)
 			{
 				favorite(currentTH, con, user);
 			}
@@ -1682,10 +1687,30 @@ public class driver {
 		}
 	}
 	
-	public static void viewFeedback(TH th, Connector con, User user) throws IOException
+	public static void viewFeedback(TH th, Connector con, User user,boolean viewAll) throws IOException
 	{
 		BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
-		String sql = "select * from Feedback where thid = " + th.thid;
+		String sql = null;
+		if(viewAll)
+		{
+			sql = "select * from Feedback where thid = " + th.thid;
+		}
+		else
+		{
+			System.out.println("Please enter max number of rows");
+			String input = null;
+			int maxEntries = -1;
+			while((input = in.readLine()) == null || input.length() == 0)
+				;
+			try{
+				maxEntries = Integer.parseInt(input);
+			}
+			catch(Exception e)
+			{
+				System.out.println("Please input a valid number");
+			}
+			sql = "select * from Feedback f  left outer join (select fid as fid2, AVG(rating)as average from Rates group by fid ) as rating on f.fid= rating.fid2 Where f.thid = '"+th.thid+"'  order by average DESC limit "+ maxEntries+ ";";
+		}
 		ArrayList<Feedback> feedbacks = new ArrayList<Feedback>();
 		ResultSet rs = null; 
 		try{
