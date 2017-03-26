@@ -1636,7 +1636,7 @@ public class driver {
 			}
 			if(inputInt == 2)
 			{
-				//view feedback
+				viewFeedback(currentTH,con,user);
 			}
 			if(inputInt == 3)
 			{
@@ -1648,6 +1648,105 @@ public class driver {
 			}
 			
 		}
+	}
+	
+	public static void viewFeedback(TH th, Connector con, User user) throws IOException
+	{
+		BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
+		String sql = "select * from Feedback where thid = " + th.thid;
+		ArrayList<Feedback> feedbacks = new ArrayList<Feedback>();
+		ResultSet rs = null; 
+		try{
+			rs = con.stmt.executeQuery(sql);
+			while(rs.next())
+			{
+				Feedback temp = new Feedback(rs.getInt("fid"), rs.getInt("thid"), rs.getInt("score"), rs.getString("text"), rs.getDate("fbDate").toString(), rs.getString("login"));
+				feedbacks.add(temp);
+			}
+			rs.close();
+		}
+		catch(Exception e) {
+			System.out.println("cannot execute query: " + sql);
+		} finally {
+			try {
+				if (rs != null && !rs.isClosed())
+					rs.close();
+			} catch (Exception e) {
+				System.out.println("cannot close resultset");
+			}
+		}
+				
+		int count = 1;
+		for(Feedback fb: feedbacks)
+		{
+			//we might need to change how this prints
+			//and get rid of any info that we think
+			//might not be necessary
+			System.out.println(count + ". " + fb.toString());
+			count++;
+		}
+		System.out.println("Enter the number of the feedback you wish to view");
+		while(true)
+		{
+			String input = null;
+			while((input = in.readLine()) == null && input.length() == 0)
+				;
+			int inputInt = -1;
+			try{
+				inputInt = Integer.parseInt(input);
+			}
+			catch(Exception e)
+			{
+				System.out.println("Please input valid number");
+				continue;
+			}
+			if(inputInt <1 || inputInt > feedbacks.size())
+			{
+				System.out.println("Please enter valid number");
+			}
+			else
+			{
+				feedbackActions(feedbacks.get(inputInt-1), th, con, user);
+				break;
+			}
+				
+		}
+	}
+	
+	public static void feedbackActions(Feedback feedback, TH th, Connector con, User user) throws IOException
+	{
+		BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
+		System.out.println("Please select feedback Action");
+		System.out.println("1. Rate Feedback");
+		System.out.println("2. Trust User");
+		System.out.println("0. return");
+		String input = null;
+		while(true)
+		{
+			while((input = in.readLine()) == null && input.length() == 0)
+				;
+			int inputInt = -1;
+			try{
+				inputInt = Integer.parseInt(input);
+			}
+			catch(Exception e)
+			{
+				System.out.println("Please input valid number");
+			}
+			if(inputInt == 1)
+			{
+				//TODO rate feedback
+			}
+			else if(inputInt == 2)
+			{
+				//TODO Trust user
+			}
+			else if(inputInt == 0)
+			{
+				return;
+			}
+		}
+		
 	}
 	
 	public static void favorite(TH th, Connector con, User user)
