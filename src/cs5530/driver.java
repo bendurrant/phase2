@@ -834,11 +834,31 @@ public class driver {
 					}
 					break;
 				case 8:
-					System.out.println("Enter new Keyword");
+					System.out.println("1. Delete Keyword");
+					System.out.println("2. Add Keyword");
+					while ((input = in.readLine()) == null || input.length() == 0)
+						;
+					try 
+					{
+						inputInt = Integer.parseInt(input);
+					} 
+					catch (Exception e)
+					{
+						System.out.println("Please enter valid number");
+					}
+					if(inputInt == 1){
+					displayKeywords(selectedTH, con, user);
+					}
+					else
+					{
+						//TODO create add keyword method
+						addKeyword(selectedTH, con, user);
+					}
+					//System.out.println("Enter new Keyword");
 					//while ((input = in.readLine()) == null || input.length() == 0)
 					//	;
 					//figure out how to do this needs option to add and remove
-					//selectedTH.name = input;
+					//selectedTh.name = name;
 					break;
 				case 9:
 					System.out.println("Enter new Availability date");
@@ -882,6 +902,158 @@ public class driver {
 			
 		}
 	}
+	
+	public static void addKeyword(TH th, Connector con, User user) throws IOException
+	{
+		BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
+		String input = null;
+		System.out.println("Please enter new Keyword");
+		while ((input = in.readLine()) == null || input.length() == 0 || input.length() > 40)
+			System.out.println("enter valid input");
+		
+		String sql = "select * from Keywords where word = '" + input + "'; ";
+		ResultSet rs = null;
+		Keyword keyword = null;
+		try{
+			rs = con.stmt.executeQuery(sql);
+			if(!rs.next())
+			{
+				int temp = addToKeywordTable(th, con, user, input);
+				keyword = new Keyword(temp, input);
+			}
+			else
+			{
+				keyword = new Keyword(rs.getInt("wid"), rs.getString("word"));
+			}
+			rs.close();
+		}
+		catch(Exception e) {
+			System.out.println("cannot execute query: " + sql);
+		} finally {
+			try {
+				if (rs != null && !rs.isClosed())
+					rs.close();
+			} catch (Exception e) {
+				System.out.println("cannot close resultset");
+			}
+		}
+		sql = "insert into HasKeywords (thid, wid) VALUES ('"+th.thid+"', '" +keyword.wid+ "');";
+		try {
+			con.stmt.executeUpdate(sql);
+			System.out.println("Keyword Successfully added");
+		} catch (java.sql.SQLIntegrityConstraintViolationException e) {
+			System.out.println("TH already has this keyword");
+			return;
+		} catch (Exception e) {
+			System.out.println("Cannot execute the query.");
+			return;
+		}
+	}
+	
+	public static int addToKeywordTable(TH th,Connector con,User user, String word)
+	{
+		String sql = "insert into Keywords (word) VALUES ('"+ word +"');";
+		int wid = -1;
+		try{
+			con.stmt.executeUpdate(sql);
+		}
+		catch(Exception e) {
+			System.out.println("cannot execute query: " + sql);
+		} 
+		sql = "select * from Keywords where word = '"+ word +"';";
+		ResultSet rs = null; 
+		try {
+			rs = con.stmt.executeQuery(sql);
+			while (rs.next()) {
+				
+				wid = rs.getInt("wid");
+				
+			}
+			rs.close();
+		} catch (Exception e) {
+			System.out.println("cannot execute query: " + sql);
+		} finally {
+			try {
+				if (rs != null && !rs.isClosed())
+					rs.close();
+			} catch (Exception e) {
+				System.out.println("cannot close resultset");
+			}
+		}
+		return wid;
+	}
+	
+	public static void displayKeywords(TH th, Connector con, User user) throws IOException
+	{
+		BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
+		ArrayList<Keyword> keywords = new ArrayList<Keyword>();
+		String sql = "select * from HasKeywords hk, Keywords kw where thid = "+ th.thid + " AND hk.wid = kw.wid;";
+		ResultSet rs = null;
+		try{
+			rs = con.stmt.executeQuery(sql);
+			while(rs.next())
+			{
+				Keyword temp = new Keyword(rs.getInt("wid"), rs.getString("word"));
+				keywords.add(temp);
+			}
+			rs.close();
+		}
+		catch(Exception e) {
+			System.out.println("cannot execute query: " + sql);
+		} finally {
+			try {
+				if (rs != null && !rs.isClosed())
+					rs.close();
+			} catch (Exception e) {
+				System.out.println("cannot close resultset");
+			}
+		}
+				
+		int count = 1;
+		for(Keyword key: keywords)
+		{
+			//we might need to change how this prints
+			//and get rid of any info that we think
+			//might not be necessary
+			System.out.println(count + ". " + key.toString());
+			count++;
+		}
+		System.out.println("Enter the number of the Keyword you wish to delete");
+		while(true)
+		{
+			String input = null;
+			while((input = in.readLine()) == null && input.length() == 0)
+				;
+			int inputInt = -1;
+			try{
+				inputInt = Integer.parseInt(input);
+			}
+			catch(Exception e)
+			{
+				System.out.println("Please input valid number");
+				continue;
+			}
+			if(inputInt <1 || inputInt > keywords.size())
+			{
+				System.out.println("Please enter valid number");
+			}
+			else
+			{
+				sql = "delete from HasKeywords Where wid = "+ keywords.get(inputInt-1).wid +" AND thid = "+ th.thid +";";
+				try {
+					con.stmt.executeUpdate(sql);
+					System.out.println("Th no longer has '" + keywords.get(inputInt-1).word + "' keyword!");
+				} 
+				catch (Exception e) {
+					System.out.println("Cannot execute the query. " + sql);
+					return;
+				}
+				break;
+			}
+				
+		}
+	}
+	
 	public static void rateFeedback(Statement stmt,User user, int fid, int rating)	
 	{
 		String sql = "INSERT INTO Rates (login, fid, rating) VALUES ('"+ user.login + "', '"+ fid + "', '" + rating +"');";
@@ -1299,6 +1471,7 @@ public class driver {
 	
 	public static void viewTH(ArrayList<TH> allTH, Connector con, User user) throws IOException
 	{
+	
 		BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
 		while(true)
 		{
