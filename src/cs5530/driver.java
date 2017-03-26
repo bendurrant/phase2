@@ -1768,7 +1768,13 @@ public class driver {
 			}
 			if(inputInt == 1)
 			{
-				//TODO rate feedback
+				if(feedback.login.equals(user.login))
+				{
+					System.out.println("You can not rate your own feedback");
+				}
+				else{
+					rateFeedback(feedback,con,user);
+				}	
 			}
 			else if(inputInt == 2)
 			{
@@ -1780,6 +1786,39 @@ public class driver {
 			}
 		}
 		
+	}
+	
+	public static void rateFeedback(Feedback feedback, Connector con, User user) throws IOException
+	{
+		BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
+		System.out.println("Please enter a usefulness rating");
+		System.out.println("0. Useless");
+		System.out.println("1. Useful");
+		System.out.println("2. Very Useful");
+		String input = null;
+		while((input = in.readLine()) == null && input.length() == 0 && (input != "0" || input!= "1" || input!= "2"))
+			System.out.println("please enter either 1 or 0 or 2");;
+		int inputInt = -1;
+		try{
+			inputInt = Integer.parseInt(input);
+		}
+		catch(Exception e)
+		{
+			System.out.println("Please input valid number");
+			
+		}
+		
+		String sql = "insert into Rates (login, fid, rating) VALUES ('"+user.login+"', '" +feedback.fid+ "', '" + inputInt + "');";
+		try {
+			con.stmt.executeUpdate(sql);
+			System.out.println("Feedback Successfully Rated");
+		} catch (java.sql.SQLIntegrityConstraintViolationException e) {
+			System.out.println("You have already rated this feedback");
+			return;
+		} catch (Exception e) {
+			System.out.println("Cannot execute the query.");
+			return;
+		}
 	}
 	
 	public static java.sql.Date inputDate() throws IOException
