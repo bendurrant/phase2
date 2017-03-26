@@ -141,13 +141,13 @@ public class driver {
 		while((password = in.readLine()) == null || password.length() == 0);
 		
 		System.out.println("Enter name:");
-		while((name = in.readLine()) == null || login.length() == 0);
+		while((name = in.readLine()) == null || name.length() == 0);
 
 		System.out.println("Enter address: ");
-		while((address = in.readLine()) == null || password.length() == 0);
+		while((address = in.readLine()) == null || address.length() == 0);
 		
 		System.out.println("Enter phone number: ");
-		while((phoneNumber = in.readLine()) == null || password.length() == 0);
+		while((phoneNumber = in.readLine()) == null || phoneNumber.length() == 0);
 		
 		user=registerUser(stmt, login, password, name, address, phoneNumber,0);
 		
@@ -244,13 +244,19 @@ public class driver {
 			switch(c)
 			{
 			case 0:
-				try {
-					con.stmt.close();
-					return;
-				} catch (SQLException e) {
-					// TODO Auto-generated catch block
-					//e.printStackTrace();
-				}
+				
+					if(con!= null){
+					try
+					{
+						con.closeConnection();
+						System.out.println ("Database connection terminated");
+						System.exit(0);
+					}
+
+					catch (Exception e) { /* ignore close errors */ }
+				}	
+				
+				 
 				break;
 			case 1:
 				createListing(con.stmt, user);
@@ -557,7 +563,8 @@ public class driver {
 		ArrayList<TH> returnThList = new ArrayList<TH>();
 		for(String cat : categories)
 		{
-			sql = "Select avg(f.score) as average, t.thid, t.category, t.url, t.name,t.address,t.phone,t.yearBuilt,t.price,t.login  From Feedback f, TH t WHERE f.thid = t.thid AND t.category = '"+ cat + "' group by thid order by average DESC Limit "+ rowLimit + "; ";// TODO write correct query!
+			sql = "select * from TH t  left outer join (select thid as thid2, AVG(score)as average from Feedback group by thid ) as rating on t.thid= rating.thid2   where t.category = '" + cat + "' order by average DESC limit "+rowLimit+";";
+// TODO write correct query!
 			
 			
 			try{
@@ -566,6 +573,7 @@ public class driver {
 				{
 					TH temp = new TH(rs.getInt("thid"), rs.getString("category"), rs.getString("url"), rs.getString("name"), rs.getString("address"), rs.getString("phone"),rs.getString("yearBuilt") , rs.getInt("price"), rs.getString("login"));
 					returnThList.add(temp);
+					
 				}
 				rs.close();
 			}
@@ -1056,6 +1064,38 @@ public class driver {
 		String sql = "INSERT INTO Rates (login, fid, rating) VALUES ('"+ user.login + "', '"+ fid + "', '" + rating +"');";
 		executeStatementUpdate(stmt,sql);
 		
+	}
+	
+	public static void giveFeedback(TH th, Connector con, User user) throws IOException
+	{
+		BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
+		System.out.println("Please enter score");
+		String input = null;
+		int score = -1; 
+		String comment = null;
+		while((input = in.readLine()) == null && input.length() == 0)
+			;
+		int inputInt = -1;
+		try{
+			inputInt = Integer.parseInt(input);
+			score = inputInt;
+		}
+		catch(Exception e)
+		{
+			System.out.println("Please input valid number");
+		}
+		System.out.println("Please enter comment or enter 0 to not leave a comment");
+		while((input = in.readLine()) == null && input.length() == 0)
+			;
+		if(input.equals("0"))
+		{
+			comment = "";
+		}
+		else
+		{
+			comment = input;
+		}
+		leaveFeedback(con.stmt,user,score,comment,th);
 	}
 	public static void leaveFeedback(Statement stmt,User user,int score,String text,TH th)
 	{
@@ -1627,11 +1667,11 @@ public class driver {
 			}
 			if(inputInt == 2)
 			{
-				//view feedback
+				viewFeedback(currentTH,con,user);
 			}
 			if(inputInt == 3)
 			{
-				//give feedback
+				giveFeedback(currentTH, con,user);
 			}
 			if(inputInt == 4)
 			{
@@ -1639,6 +1679,139 @@ public class driver {
 			}
 			
 		}
+	}
+	
+	public static void viewFeedback(TH th, Connector con, User user) throws IOException
+	{
+		BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
+		String sql = "select * from Feedback where thid = " + th.thid;
+		ArrayList<Feedback> feedbacks = new ArrayList<Feedback>();
+		ResultSet rs = null; 
+		try{
+			rs = con.stmt.executeQuery(sql);
+			while(rs.next())
+			{
+				Feedback temp = new Feedback(rs.getInt("fid"), rs.getInt("thid"), rs.getInt("score"), rs.getString("text"), rs.getDate("fbDate").toString(), rs.getString("login"));
+				feedbacks.add(temp);
+			}
+			rs.close();
+		}
+		catch(Exception e) {
+			System.out.println("cannot execute query: " + sql);
+		} finally {
+			try {
+				if (rs != null && !rs.isClosed())
+					rs.close();
+			} catch (Exception e) {
+				System.out.println("cannot close resultset");
+			}
+		}
+				
+		int count = 1;
+		for(Feedback fb: feedbacks)
+		{
+			//we might need to change how this prints
+			//and get rid of any info that we think
+			//might not be necessary
+			System.out.println(count + ". " + fb.toString());
+			count++;
+		}
+		System.out.println("Enter the number of the feedback you wish to view");
+		while(true)
+		{
+			String input = null;
+			while((input = in.readLine()) == null && input.length() == 0)
+				;
+			int inputInt = -1;
+			try{
+				inputInt = Integer.parseInt(input);
+			}
+			catch(Exception e)
+			{
+				System.out.println("Please input valid number");
+				continue;
+			}
+			if(inputInt <1 || inputInt > feedbacks.size())
+			{
+				System.out.println("Please enter valid number");
+			}
+			else
+			{
+				feedbackActions(feedbacks.get(inputInt-1), th, con, user);
+				break;
+			}
+				
+		}
+	}
+	
+	public static void feedbackActions(Feedback feedback, TH th, Connector con, User user) throws IOException
+	{
+		BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
+		
+		String input = null;
+		while(true)
+		{
+			System.out.println("Please select feedback Action");
+			System.out.println("1. Rate Feedback");
+			System.out.println("2. Trust/Untrust User");
+			System.out.println("0. return");
+			while((input = in.readLine()) == null && input.length() == 0)
+				;
+			int inputInt = -1;
+			try{
+				inputInt = Integer.parseInt(input);
+			}
+			catch(Exception e)
+			{
+				System.out.println("Please input valid number");
+			}
+			if(inputInt == 1)
+			{
+				//TODO rate feedback
+			}
+			else if(inputInt == 2)
+			{
+				trustUser(feedback, con, user);
+			}
+			else if(inputInt == 0)
+			{
+				return;
+			}
+		}
+		
+	}
+	
+	public static void trustUser(Feedback feedback,Connector con,User user) throws IOException
+	{
+		BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
+		System.out.println("1. mark user as trusted");
+		System.out.println("0. mark user as untrusted");
+		String input = null;
+		while((input = in.readLine()) == null && input.length() == 0 && (input != "0" || input!= "1"))
+			System.out.println("please enter either 1 or 0");;
+		int inputInt = -1;
+		try{
+			inputInt = Integer.parseInt(input);
+		}
+		catch(Exception e)
+		{
+			System.out.println("Please input valid number");
+			
+		}
+		String sql = null;
+
+		sql = "insert into Trust (isTrusted, Truster, Trustee) VALUES ('"+inputInt+"', '" + user.login+ "', '" + feedback.login +  "');";
+		try {
+			con.stmt.executeUpdate(sql);
+			System.out.println("Trustworthiness successfully added");
+		} catch (java.sql.SQLIntegrityConstraintViolationException e) {
+			System.out.println("You already trusted/untrusted this user");
+			return;
+		} catch (Exception e) {
+			System.out.println("Cannot execute the query." + sql);
+			return;
+		}
+		
 	}
 	
 	public static void favorite(TH th, Connector con, User user)
