@@ -4,19 +4,22 @@ import java.text.SimpleDateFormat;
 
 
 public class Reservation {
-	int thid;
-	Period period;
-
- public Reservation(int thid,Period period)
+	TH th;
+	
+	public java.sql.Date start;
+	public java.sql.Date stop;
+ public Reservation(TH th,java.sql.Date start,java.sql.Date stop)
  {
-	 this.thid=thid;
-
+	 this.th=th;
+	 this.start=start;
+		this.stop=stop;
  }
  
  public String ToString()
  {
 	//"EEE, MMM d, 'yyyy"                ->>  Wed, July 10, 1996
 	 SimpleDateFormat format1 = new SimpleDateFormat("EEE, MMM d, yyyy" );
-	 return "Reserving TH with id: "+thid+" From: "+format1.format(period.start.getTime()+" To: "+format1.format(period.stop.getTime()));
+	 //return "Reservation for TH with id: "+thid+" From: "+format1.format(period.start.getTime()+" To: "+format1.format(period.stop.getTime()));
+	 return "Reservation for TH with id: "+th.thid+" From: "+start.toString()+" To: "+stop.toString();
  }
 }

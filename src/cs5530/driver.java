@@ -245,6 +245,7 @@ public class driver {
 			{
 			case 0:
 				
+				confirmReservations(user);//confirm the reservations in the shoppoing cart
 					if(con!= null){
 					try
 					{
@@ -1663,7 +1664,7 @@ public class driver {
 			}
 			if(inputInt == 1)
 			{
-				//make reservation
+				recordReservation(user,currentTH);
 			}
 			if(inputInt == 2)
 			{
@@ -1778,6 +1779,86 @@ public class driver {
 				return;
 			}
 		}
+		
+	}
+	
+	public static java.sql.Date inputDate() throws IOException
+	{
+		BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
+		
+		java.sql.Date inputDate = null;
+		System.out.println("Input a date in the format \"yyyy-MM-dd\"");
+		
+		String input=null;
+		boolean success =false;
+		
+		while(!success)
+		{
+
+			while ((input = in.readLine()) == null || input.length() == 0) //get input
+				;
+			try
+			{
+				inputDate=java.sql.Date.valueOf(input);
+				success=true;
+			}catch(Exception e)
+			{
+				System.out.println("Invalid Date");
+			}
+		}
+		
+		return inputDate;
+	}
+	
+	public static void recordReservation(User user,TH th)
+	{//TODO: CHOOSE DATES FROM THOSE AVAILABLE
+		LocalDate now= LocalDate.now();
+		java.sql.Date sqlDate=java.sql.Date.valueOf(now);
+		user.addReservation(th, sqlDate, sqlDate);
+	}
+	public static void confirmReservations(User user) throws IOException
+	{
+		BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
+		String input ="";
+		int count;
+		while(!input.equals("0"))
+		{
+			count=0;
+			input=null;
+			System.out.println("Pending Reservations: ");
+			
+			for(Reservation current : user.reservations)
+			{
+				System.out.println((count)+": "+current.ToString());//print out all reservations
+				count++;
+			}
+			
+			System.out.println("To remove a reservation input the coresponding number or zero to confirm reservation.");
+			
+			
+			while ((input = in.readLine()) == null || input.length() == 0) //get input
+				;
+			int c=1;
+			
+			if(!input.equals("0"))//if a selection was given 
+			{
+				try 
+				{
+					c = Integer.parseInt(input);
+					user.reservations.remove(c-1);//remove that reservation
+				} 
+				catch (Exception e)
+				{
+					System.out.println("Please enter valid number");
+				}
+			}
+			
+			
+			
+		}
+	
+		
+		
 		
 	}
 	

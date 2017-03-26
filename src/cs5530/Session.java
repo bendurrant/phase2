@@ -12,6 +12,6 @@ public class Session {
 	
 	public void addReservation(int thid,Period period)
 	{
-		reservations.add(new Reservation(thid,period));
+		//reservations.add(new Reservation(thid,period));
 	}
 }

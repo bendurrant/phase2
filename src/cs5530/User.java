@@ -17,8 +17,8 @@ public class User {
 		reservations=new ArrayList<Reservation>();
 	}
 	
-	public void addReservation(int thid,Period period)
+	public void addReservation(TH th,java.sql.Date start,java.sql.Date stop)
 	{
-		reservations.add(new Reservation(thid,period));
+		reservations.add(new Reservation(th,start,stop));
 	}
 }
