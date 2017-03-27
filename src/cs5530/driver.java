@@ -26,7 +26,7 @@ public class driver {
 
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
-		System.out.println("Example for cs5530");
+		//System.out.println("Example for cs5530");
 		Connector con=null;
 		String choice;
 		int c=0;
@@ -57,7 +57,14 @@ public class driver {
 				if (c == 1) {
 					User user = loginUser(con.stmt);
 					if(user != null){
-						enterApplication(con, user);
+						if(user.isAdmin)
+						{
+							openAdminMenu(con,user);
+						}else
+						{
+							enterApplication(con, user);
+						}
+						
 						break;
 					}
 					
@@ -68,6 +75,7 @@ public class driver {
 				{
 					User user = registerUser(con.stmt);
 					if(user != null){
+						
 						enterApplication(con, user);
 					}
 					break;
@@ -779,7 +787,7 @@ public class driver {
 				System.out.println("6. yearBuilt");
 				System.out.println("7. price");
 				System.out.println("8. Keywords");
-				System.out.println("9 Availabilities");
+				System.out.println("9. Availabilities");
 				System.out.println("10. Finished Updating");
 				while ((input = in.readLine()) == null || input.length() == 0)
 					;
@@ -869,12 +877,27 @@ public class driver {
 					//selectedTh.name = name;
 					break;
 				case 9:
-					System.out.println("Enter new Availability date");
+					
 					//while ((input = in.readLine()) == null || input.length() == 0)
 					//	;
 					//figure out how to do this
 					//most likely needs a date range. From start to end
 					//selectedTH.name = input;
+					
+					int choice = promptInt("Enter 1 to ADD or 2 to REMOVE an availability");
+					switch(choice)
+					{
+					case 1:
+
+						
+						addAvailability(con.stmt, user,selectedTH);
+						break;
+					case 2:
+						removeAvailability(selectedTH, con,user);
+						break;
+					}
+					
+					
 					break;
 				case 10:
 					System.out.println("Updating TH");
@@ -1667,7 +1690,7 @@ public class driver {
 			}
 			if(inputInt == 1)
 			{
-				recordReservation(user,currentTH);
+				recordReservation(con.stmt,user,currentTH);
 			}
 			if(inputInt == 2)
 			{
@@ -1816,7 +1839,7 @@ public class driver {
 	}
 	
 	public static void rateFeedback(Feedback feedback, Connector con, User user) throws IOException
-	{
+	{		
 		BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
 		System.out.println("Please enter a usefulness rating");
 		System.out.println("0. Useless");
@@ -1847,20 +1870,235 @@ public class driver {
 			return;
 		}
 	}
+	public static void removeAvailability(TH th, Connector con, User user)
+	{
+		ArrayList<Availability> Availabilities = new ArrayList<Availability>();	
+		ResultSet rs = null;
+		String sql="SELECT * FROM 5530db13.Available natural join 5530db13.Period where thid="+th.thid+";";
+		//At this moment I don't have a TH class made yet.
+		try{
+		
+			System.out.println("Executing: "+sql);
+		 rs = con.stmt.executeQuery(sql);
+		 
+		 while(rs.next())
+			{
+			 Availability temp = new Availability(new Period(rs.getDate("start"),rs.getDate("stop")),rs.getInt("pid"));
+				Availabilities.add(temp);
+			}
+		 
+		}
+		catch(Exception e)
+		{
+			System.out.println("cannot execute query: ");
+		}
+		finally{
+			try{
+				if(rs != null && !rs.isClosed())
+				{
+					rs.close();
+				}
+			}
+			catch(Exception e)
+			{
+				System.out.println("cannot close resultset");
+			}
+		}
+		
+		
+		int input=-1;
+		int count;		
+		
+		while(input!=0)
+		{
+			count=1;			
+			System.out.println("Current Availabilities: ");
+			
+			for(Availability current : Availabilities)
+			{
+				System.out.println((count)+": "+current.ToString());//print out all reservations
+				count++;
+			}
+			
+			
+			try {
+				input = promptInt("To remove an Availability input the coresponding number or zero to stop.");
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+				System.out.println("Invalid choice");
+			}		
+			
+			
+			if(input!=0)//if a selection was given 
+			{
+				try 
+				{
+					int toRemove=Availabilities.get(input-1).pid;
+					removePeriod(con.stmt,toRemove);
+					Availabilities.remove(input-1);//remove that reservation
+					
+				} 
+				catch (Exception e)
+				{
+					System.out.println("Invalid choice");
+				}
+			}
+			
+			
+			
+		}
+		
+	}
+
+	public static void removePeriod(Statement stmt,int pid)//changes will cacade to available table
+	{
+		String sql="DELETE FROM `5530db13`.`Period` WHERE `pid`="+pid+";";
+				
+		try {
+			stmt.executeUpdate(sql);
+			System.out.println("Period successfully removed");					
+		} catch (Exception e) {
+			System.out.println("Error removing this period");
+			return;
+		}
+	}
 	
+	public static void addAvailability(Statement stmt, User user,TH th) throws IOException
+	{
+		System.out.println("Enter new Availability range");
+		Period inPeriod=new Period();
+		System.out.println("Start Date: ");
+		inPeriod.start=inputDate();
+		
+		System.out.println("Ending Date: ");
+		inPeriod.stop=inputDate();
+		
+		int price=promptInt("Enter the price per night as an integer");
+		System.out.println("got price");
+//		SELECT * FROM tbl WHERE
+//		existing_start BETWEEN $newStart AND $newEnd OR 
+//		existing_end BETWEEN $newStart AND $newEnd OR
+//		$newStart BETWEEN existing_start AND existing_end
+//
+//		if (!empty($result))
+//		throw new Exception('We have overlapping')
+		
+		//test for valid range
+		
+	
+		String startString=inPeriod.start.toString();
+		String stopString=inPeriod.stop.toString();
+		
+		String validQuery="SELECT * FROM 5530db13.Period natural join 5530db13.Available WHERE thid="+th.thid +" AND start BETWEEN '"+ startString +"' AND  '"+ stopString +"'  OR stop BETWEEN  '"+ startString +"' AND '"+ stopString +"' OR '"+ startString +"' BETWEEN start AND stop;";
+		System.out.println(validQuery);
+		
+		ResultSet rs = null;
+		boolean overlap = false;
+				try {
+					rs = stmt.executeQuery(validQuery);
+					overlap = rs.next();
+					rs.close();
+				}
+		catch (Exception e) {
+			System.out.println("cannot execute query: " + validQuery);
+		} finally {
+			try {
+				if (rs != null && !rs.isClosed())
+					rs.close();
+			} catch (Exception e) {
+				System.out.println("cannot close resultset");
+			}
+		}
+				
+				if(overlap)
+				{
+					System.out.println("Overlapping Dates: Check ranges or Consider removing a previous availability to inset a new one");
+					return;
+				}
+				
+				
+				//INSERT INTO `5530db13`.`Available` (`thid`, `pid`, `pricePerNight`) VALUES ('1', '1', '1');
+				
+				int newPid=insertPeriod(stmt,inPeriod);
+				if(newPid>0)
+				{
+					String sql="INSERT INTO `5530db13`.`Available` (`thid`, `pid`, `pricePerNight`) VALUES ("+th.thid+", "+newPid+", "+price+");";
+					try {
+						stmt.executeUpdate(sql);
+						System.out.println("Availability successfully added");					
+					} catch (Exception e) {
+						System.out.println("Cannot execute the query." + sql);
+						return;
+					}
+					
+				}
+				
+				
+	}
+	
+	public static int promptInt(String message) throws IOException
+	{
+		String input=null;
+		BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
+		boolean valid=false;
+		System.out.println(message);
+		int c=-1;
+		while(!valid){
+		while ((input = in.readLine()) == null || input.length() == 0) //get input
+			;
+		
+		
+			try 
+			{
+				c = Integer.parseInt(input);
+				valid=true;
+			} 
+			catch (Exception e)
+			{
+				System.out.println("Please enter valid number");
+			}
+		}
+		
+		return c;
+	}
+	
+	public static int insertPeriod(Statement stmt,Period newPeriod)
+	{
+		//INSERT INTO `5530db13`.`Period` (`start`, `stop`) VALUES ('2017-03-25', '2017-03-28');
+
+		String startString=newPeriod.start.toString();
+		String stopString=newPeriod.stop.toString();
+		
+		int newKey=-1;
+		String sql="INSERT INTO `5530db13`.`Period` (`start`, `stop`) VALUES ('"+startString+"', '"+stopString+"');";
+		try {
+			stmt.executeUpdate(sql,Statement.RETURN_GENERATED_KEYS);
+			
+			ResultSet rs = stmt.getGeneratedKeys();
+			if (rs.next()){
+			    newKey=rs.getInt(1);
+			}
+							
+		} catch (Exception e) {
+			System.out.println("Cannot execute the query." + sql);
+			return -1;
+		}
+		
+		return newKey;
+	}
 	public static java.sql.Date inputDate() throws IOException
 	{
 		BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
 		
 		java.sql.Date inputDate = null;
-		System.out.println("Input a date in the format \"yyyy-MM-dd\"");
+		
 		
 		String input=null;
 		boolean success =false;
 		
 		while(!success)
 		{
-
+			System.out.println("Input a date in the format \"yyyy-MM-dd\"");
 			while ((input = in.readLine()) == null || input.length() == 0) //get input
 				;
 			try
@@ -1876,12 +2114,26 @@ public class driver {
 		return inputDate;
 	}
 	
-	public static void recordReservation(User user,TH th)
+	public static void recordReservation(Statement stmt,User user,TH th)
 	{//TODO: CHOOSE DATES FROM THOSE AVAILABLE
 		LocalDate now= LocalDate.now();
 		java.sql.Date sqlDate=java.sql.Date.valueOf(now);
-		user.addReservation(th, sqlDate, sqlDate);
+		
+		Period selected = promptPeriodByTH(stmt,th,user);
+		user.addReservation(th, selected);
 	}
+	
+	public static Period promptPeriodByTH(Statement stmt,TH th,User user)
+	{
+		Period selected= new Period();
+		
+		
+		
+		
+		return selected;
+	}
+	
+	
 	public static void confirmReservations(User user) throws IOException
 	{
 		BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
@@ -2044,6 +2296,12 @@ public class driver {
 		
 	}
 		
+	public static void openAdminMenu(Connector con, User user)
+	{
+		
+	}
+	
+	
 	public static void displayOptions()
 	{
 		System.out.println("     Options     ");

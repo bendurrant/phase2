@@ -11,6 +11,11 @@ public class Period {
 		this.start=start;
 		this.stop=stop;
 	}
+	public Period() {
+		// TODO Auto-generated constructor stub
+		this.start=null;
+		this.stop=null;
+	}
 
 //	public  Date getSqlDate(boolean useStart)
 //	 {
