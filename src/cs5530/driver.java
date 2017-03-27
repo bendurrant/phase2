@@ -634,7 +634,7 @@ public class driver {
 			
 			if(choice == 1)
 			{
-				ArrayList<TH> mostPop = findMostPopular(con);
+				ArrayList<TH> mostPop = findMostPopular(con, maxEntries);
 				
 				viewTH(mostPop,con,user);
 				
@@ -768,7 +768,7 @@ public class driver {
 		
 	}
 	
-	public static ArrayList<TH> findMostPopular(Connector con)
+	public static ArrayList<TH> findMostPopular(Connector con, int rowLimit)
 	{
 		String sql = "select DISTINCT category AS category FROM TH;";
 		ResultSet rs = null;
@@ -795,7 +795,7 @@ public class driver {
 		ArrayList<TH> returnThList = new ArrayList<TH>();
 		for(String cat : categories)
 		{
-			sql = "";// TODO write correct query!
+			sql = "select * from TH t left outer join (select thid as thid2, count(thid) as average from Visits group by thid) as rating on t.thid = rating.thid2 where t.category = '"+cat+"' order by average DESC limit "+rowLimit+";";// TODO write correct query!
 			
 			
 			try{
