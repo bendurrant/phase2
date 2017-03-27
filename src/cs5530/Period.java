@@ -17,6 +17,20 @@ public class Period {
 		this.stop=null;
 	}
 
+	
+	public boolean contains(Period p)//returns whether a given period fully contains another 
+	{
+		boolean startWithinOrEqual=!(p.start.before(start) || p.start.after(stop));//starts are equal or or p is within this  
+		boolean stopWithinOrEqual=!(p.stop.before(start) || p.stop.after(stop));
+		
+		return startWithinOrEqual&&stopWithinOrEqual;
+	}
+	
+	public boolean isValid()//returns whether this period is valid in order
+	{
+		return start.before(stop);
+	}
+	
 //	public  Date getSqlDate(boolean useStart)
 //	 {
 //		if(useStart)

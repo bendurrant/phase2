@@ -8,6 +8,7 @@ public class User {
 	public boolean isAdmin;
 	
 	ArrayList<Reservation> reservations;
+	ArrayList<Visit> visits;
 	public User(String login, String password, boolean isAdmin)
 	{
 		//UserType is whether the user is admin or not
@@ -15,6 +16,7 @@ public class User {
 		this.password = password;
 		this.isAdmin = isAdmin;
 		reservations=new ArrayList<Reservation>();
+		visits= new ArrayList<Visit>();
 	}
 	
 	public void addReservation(TH th,Period period)
