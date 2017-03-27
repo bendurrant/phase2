@@ -114,7 +114,7 @@ public class driver {
 		
 		String sql = "INSERT INTO Users (login, name, userType, address, phoneNumber, password) VALUES ('"+ login + "', '"+ name + "', '" + isAdmin + "', '"+ address + "', '" + phoneNumber + "', '" + password +"');";
 		
-		System.out.println("executing "+sql);
+		//System.out.println("executing "+sql);
 		try{
 			
 			stmt.executeUpdate(sql);
@@ -195,7 +195,7 @@ public class driver {
 
 		String sql = "select * from Users where login = '" + login + "' and password = '" + password + "';";
 		ResultSet rs = null; 
-		System.out.println("executing "+sql);
+		//System.out.println("executing "+sql);
 		try{
 			
 			rs=stmt.executeQuery(sql);
@@ -840,7 +840,7 @@ public class driver {
 		BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
 		ArrayList<TH> usersTH = new ArrayList<TH>();
 		String sql = "Select * from TH where login = '" + user.login + "';";
-		System.out.println("executing "+sql);
+		//System.out.println("executing "+sql);
 		ResultSet rs = null;
 		
 		try{
@@ -1025,7 +1025,7 @@ public class driver {
 							+ selectedTH.name + "', address='" + selectedTH.address + "', phone='" + selectedTH.phone + "', yearbuilt='"
 							+ selectedTH.yearBuilt + "', price ='" + selectedTH.price + "' WHERE thid='"+ selectedTH.thid +"';";
 					try{
-						System.out.println("executing: " + sql);
+						//System.out.println("executing: " + sql);
 						con.stmt.executeUpdate(sql);
 						
 						
@@ -1248,7 +1248,7 @@ public class driver {
 		String OwnedSql="SELECT * FROM TH WHERE login='"+user.login+"' AND thid="+th.thid+";";
 		
 		ResultSet rs = null; 
-		System.out.println("executing "+OwnedSql);
+	//	System.out.println("executing "+OwnedSql);
 		try{
 			
 			rs=stmt.executeQuery(OwnedSql);
@@ -1289,7 +1289,7 @@ public class driver {
 	public static boolean executeStatementUpdate(Statement stmt, String sql)
 	{
 		boolean status=true;
-		System.out.println("executing "+sql);
+		//System.out.println("executing "+sql);
 		try{
 			
 			stmt.executeUpdate(sql);
@@ -1510,7 +1510,9 @@ public class driver {
 		case 3:
 			From.append("left outer join (SELECT thid as thid2,AVG(score) as avgScore FROM 5530db13.Feedback WHERE login in (Select Trustee FROM 5530db13.Trust WHERE Truster='"+user.login+"' AND isTrusted=1) group by thid)as rating ON t.thid=rating.thid2 ");
 			break;
-			
+			default:
+				filterType=1;
+				break;
 		}
 		
 		
@@ -1693,7 +1695,7 @@ public class driver {
 		//execute the query
 			//iterate throught the result set and create new TH objects
 			//for each line in the result set
-			System.out.println("Executing: "+sql);
+			//System.out.println("Executing: "+sql);
 		 rs = con.stmt.executeQuery(sql);
 		 
 		 while(rs.next())
@@ -1811,6 +1813,10 @@ public class driver {
 			if(inputInt == 1)
 			{
 				recordReservation(con.stmt,user,currentTH);
+				if(promptInt("Would you like to see recomendations based on your reservation?(1:Y | 0:N)")==1)
+				{
+					getRecomendations(con,user,currentTH);
+				}
 			}
 			if(inputInt == 2)
 			{
@@ -1999,7 +2005,7 @@ public class driver {
 		//At this moment I don't have a TH class made yet.
 		try{
 		
-			System.out.println("Executing: "+sql);
+			//System.out.println("Executing: "+sql);
 		 rs = con.stmt.executeQuery(sql);
 		 
 		 while(rs.next())
@@ -2258,16 +2264,16 @@ public class driver {
 	
 	public static void promptPeriodByTH(Statement stmt,TH th,User user)//also inserts into user
 	{
-		Period selected= new Period();
+		
 		ArrayList<Availability> Availabilities = new ArrayList<Availability>();	
 		ResultSet rs = null;
 		String sql="SELECT * FROM 5530db13.Available natural join 5530db13.Period where thid="+th.thid+";";
-		Availability container = null;
+		
 		Period inPeriod=new Period();
 		
 		try{
 		
-			System.out.println("Executing: "+sql);
+			//System.out.println("Executing: "+sql);
 		 rs = stmt.executeQuery(sql);
 		 
 		 while(rs.next())
@@ -2371,7 +2377,7 @@ public class driver {
 
 		try{
 
-			System.out.println("Executing: "+sql);
+			//System.out.println("Executing: "+sql);
 			rs = stmt.executeQuery(sql);
 
 			while(rs.next())
@@ -2515,7 +2521,7 @@ public class driver {
 		int count;
 		while(!input.equals("0"))
 		{
-			count=0;
+			count=1;
 			input=null;
 			System.out.println("Pending Reservations: ");
 			
@@ -2656,7 +2662,7 @@ public class driver {
 		}
 		
 		String sql = "INSERT INTO TH (category, url, name, address, phone, yearBuilt, price, login) VALUES ('"+ category + "', '"+ url + "', '" + name + "', '"+ address + "', '" + phone + "', '" + yearBuilt + "', '" + price + "' ,'" + user.login + "');";
-		System.out.println("executing "+sql);
+		//System.out.println("executing "+sql);
 		try{
 			
 			stmt.executeUpdate(sql);
@@ -2745,7 +2751,7 @@ public class driver {
 
 		try{
 		//execute the query		
-			System.out.println("Executing: "+sql);
+			//System.out.println("Executing: "+sql);
 		 rs = con.stmt.executeQuery(sql);
 		 
 		 while(rs.next())
@@ -2816,13 +2822,61 @@ public class driver {
 		
 		
 	}
-	
 
-	
+	public static void getRecomendations(Connector con,User user,TH th)
+	{
+		String sql="Select * from 5530db13.TH natural join (Select v2.thid,count(*)as total From Visits v1 CROSS JOIN Visits v2 WHERE v1.login!='"+user.login+"' AND v1.thid="+th.thid+" AND v1.login=v2.login AND v1.thid!=v2.thid Group By v2.thid) as suggestions ORDER BY total desc;";
+		
+		ArrayList<TH> thList = new ArrayList<TH>();
+		ResultSet rs = null;
+		//At this moment I don't have a TH class made yet.
+		try{
+		//execute the query
+			//iterate throught the result set and create new TH objects
+			//for each line in the result set
+			//System.out.println("Executing: "+sql);
+		 rs = con.stmt.executeQuery(sql);
+		 
+		 while(rs.next())
+			{
+				TH temp = new TH(rs.getInt("thid"), rs.getString("category"), rs.getString("url"), rs.getString("name"), rs.getString("address"), rs.getString("phone"),rs.getString("yearBuilt") , rs.getInt("price"), rs.getString("login"));
+				thList.add(temp);
+			}
+		 
+		}
+		catch(Exception e)
+		{
+			System.out.println("cannot execute query: ");
+		}
+		finally{
+			try{
+				if(rs != null && !rs.isClosed())
+				{
+					rs.close();
+				}
+			}
+			catch(Exception e)
+			{
+				System.out.println("cannot close resultset");
+			}
+		}
+		
+		// at this point we should have all TH in that array list and we 
+		//call the following function to display
+		try {
+			viewTH(thList,con, user);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			System.out.println("System: We're having troubles displaying your TH recomendations.");
+		}
+	}
+
+
+
 	public static void displayOptions()
 	{
 		System.out.println("     Options     ");
-		System.out.println("0. logout");
+		System.out.println("0. Checkout and Logout");
 		System.out.println("1. Create a new listing");
 		System.out.println("2. Alter existing TH");
 		System.out.println("3. Browse TH");

@@ -20,7 +20,7 @@ public class Reservation {
 		pid=-1;
  }
  
- public String ToString()
+ public String toString()
  {
 		 return "Reservation for TH with id: "+th.thid+" From: "+start.toString()+" To: "+stop.toString();
  }
