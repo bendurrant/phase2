@@ -27,8 +27,7 @@ public class driver {
 	}
 
 	public static void main(String[] args) {
-		// TODO Auto-generated method stub
-		//System.out.println("Example for cs5530");
+
 		Connector con=null;
 		String choice;
 		int c=0;
@@ -387,7 +386,6 @@ public class driver {
 		{
 			System.out.println("Please input a valid number");
 		}
-		//TODO change query 
 		String sql = "select login from Users u left outer join(select login as login2, avg(rating) as average From  Rates group by login) as rating on u.login = rating.login2 order by average DESC limit "+maxEntries+";";
 		ArrayList<String> users = new ArrayList<String>();
 		ResultSet rs = null; 
@@ -650,7 +648,7 @@ public class driver {
 			
 			if(choice == 1)
 			{
-				ArrayList<TH> mostPop = findMostPopular(con);
+				ArrayList<TH> mostPop = findMostPopular(con, maxEntries);
 				
 				viewTH(mostPop,con,user);
 				
@@ -698,9 +696,7 @@ public class driver {
 		ArrayList<TH> returnThList = new ArrayList<TH>();
 		for(String cat : categories)
 		{
-			sql = "select * from TH t  left outer join (select thid as thid2, AVG(score)as average from Feedback group by thid ) as rating on t.thid= rating.thid2   where t.category = '" + cat + "' order by average DESC limit "+rowLimit+";";
-// TODO write correct query!
-			
+			sql = "select * from TH t  left outer join (select thid as thid2, AVG(score)as average from Feedback group by thid ) as rating on t.thid= rating.thid2   where t.category = '" + cat + "' order by average DESC limit "+rowLimit+";";			
 			
 			try{
 				rs = con.stmt.executeQuery(sql);
@@ -784,7 +780,7 @@ public class driver {
 		
 	}
 	
-	public static ArrayList<TH> findMostPopular(Connector con)
+	public static ArrayList<TH> findMostPopular(Connector con, int rowLimit)
 	{
 		String sql = "select DISTINCT category AS category FROM TH;";
 		ResultSet rs = null;
@@ -811,7 +807,7 @@ public class driver {
 		ArrayList<TH> returnThList = new ArrayList<TH>();
 		for(String cat : categories)
 		{
-			sql = "";// TODO write correct query!
+			sql = "select * from TH t left outer join (select thid as thid2, count(thid) as average from Visits group by thid) as rating on t.thid = rating.thid2 where t.category = '"+cat+"' order by average DESC limit "+rowLimit+";";
 			
 			
 			try{
@@ -991,7 +987,7 @@ public class driver {
 					}
 					else
 					{
-						//TODO create add keyword method
+						
 						addKeyword(selectedTH, con, user);
 					}
 					//System.out.println("Enter new Keyword");
