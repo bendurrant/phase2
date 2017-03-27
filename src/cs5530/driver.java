@@ -26,7 +26,7 @@ public class driver {
 
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
-		System.out.println("Example for cs5530");
+		System.out.println("Uotel");
 		Connector con=null;
 		String choice;
 		int c=0;
