@@ -48,12 +48,12 @@ public class driver {
 				} catch (Exception e) {
 					continue;
 				}
-				if(c==7)//cheat in without typing
-				{
-					User boss = new User("JoshNelson", "IHeartGrannies", true);
-					enterApplication(con, boss);
-					break;
-				}
+				//if(c==7)//cheat in without typing
+				//{
+					//User boss = new User("JoshNelson", "password", true);
+					//enterApplication(con, boss);
+					//break;
+				//}
 				if (c < 1 | c > 3)
 					continue;
 				// Case for logging in
